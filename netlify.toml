@@ -1,18 +1,13 @@
-# Netlify 설정 — GEO Strategy Builder
-# /api/generate  →  /.netlify/functions/generate 로 연결됩니다.
-
 [build]
-  publish = "public"
+  publish = "."
 
 [functions]
-  directory = "netlify/functions"
+  directory = "."
   node_bundler = "esbuild"
 
-# OpenAI 호출용 — 함수 타임아웃을 26초로 (무료 플랜 최대치)
 [functions.generate]
   timeout = 26
 
-# /api/* 를 서버리스 함수로 라우팅 (index.html 의 fetch('/api/generate') 그대로 동작)
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
