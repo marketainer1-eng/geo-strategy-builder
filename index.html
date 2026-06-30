@@ -1,0 +1,3731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO 전략 보고서 생성기 | Generative Engine Optimization</title>
+<style>
+</style>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+  :root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  /* ===== LANDING / FORM PAGE ===== */
+  #page-form {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+    color: white;
+    padding: 64px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: #fde68a; }
+  .hero p {
+    font-size: clamp(15px, 2vw, 18px);
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto 32px;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat strong { display: block; font-size: 28px; font-weight: 800; color: #fde68a; }
+  .hero-stat span { font-size: 13px; opacity: 0.8; }
+
+  /* Form Container */
+  .form-container {
+    max-width: 860px;
+    margin: -40px auto 60px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,0.05);
+    overflow: hidden;
+  }
+
+  .form-header {
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+    padding: 24px 32px;
+    color: white;
+  }
+  .form-header h2 { font-size: 20px; font-weight: 700; }
+  .form-header p { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+
+  .form-body { padding: 32px; }
+
+  .form-section {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .form-section:last-of-type { border-bottom: none; margin-bottom: 0; }
+
+  .form-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section-title::before {
+    content: '';
+    width: 4px; height: 16px;
+    background: var(--primary);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+  .form-group label .required { color: var(--danger); margin-left: 2px; }
+
+  .form-control {
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--gray-800);
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: white;
+  }
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  select.form-control { cursor: pointer; }
+
+  .services-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .service-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .service-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* AI Settings Card */
+  .ai-settings-card .form-header { background: linear-gradient(135deg,#0f172a,#1e293b) !important; }
+  .ai-badge-optional {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    background: rgba(255,255,255,0.15); border-radius: 10px;
+    color: rgba(255,255,255,0.8); margin-left: 8px; vertical-align: middle;
+  }
+  .ai-key-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn-eye {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; font-size: 12px;
+    color: #6b7280; padding: 4px 8px; border-radius: 4px;
+  }
+  .btn-eye:hover { background: #f3f4f6; }
+  .ai-status-row {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding-top: 12px; border-top: 1px solid #e5e7eb;
+  }
+  .ai-toggle-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .ai-toggle-track {
+    width: 40px; height: 22px; background: #d1d5db; border-radius: 11px;
+    position: relative; transition: background 0.2s;
+  }
+  input[type=checkbox]#ai-enabled { display: none; }
+  input[type=checkbox]#ai-enabled:checked + .ai-toggle-track { background: #6366f1; }
+  .ai-toggle-thumb {
+    width: 18px; height: 18px; background: white; border-radius: 50%;
+    position: absolute; top: 2px; left: 2px; transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  input[type=checkbox]#ai-enabled:checked + .ai-toggle-track .ai-toggle-thumb { left: 20px; }
+  .ai-toggle-text { font-size: 13px; font-weight: 600; color: #374151; }
+  .ai-info-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ai-pill {
+    font-size: 11px; font-weight: 600; padding: 4px 10px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .ai-pill-local { background: #ecfdf5; color: #065f46; border: 1px solid #6ee7b7; }
+  .ai-pill-ai { background: #ede9fe; color: #4c1d95; border: 1px solid #c4b5fd; opacity: 0.5; transition: opacity 0.2s; }
+  .ai-pill-ai.active { opacity: 1; }
+
+  /* AI Generation Progress in Report */
+  .ai-gen-placeholder {
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px; height: 120px;
+    display: flex; align-items: center; justify-content: center;
+    color: #64748b; font-size: 14px; gap: 8px;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .ai-gen-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    color: white; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; margin-left: 8px;
+  }
+  .ai-gen-badge::before { content: '✨'; }
+  .ai-error-banner {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
+    padding: 12px 16px; font-size: 13px; color: #dc2626;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .ai-fallback-notice {
+    background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px;
+    padding: 8px 12px; font-size: 12px; color: #c2410c;
+    margin-bottom: 10px;
+  }
+
+  /* Competitor Inputs */
+  .competitor-inputs { display: flex; flex-direction: column; gap: 10px; }
+  .competitor-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .competitor-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* AI Definition Box */
+  .ai-def-wrap { padding: 4px 0 8px; }
+  .ai-def-anchor {
+    font-size: 14px; font-style: italic; color: #1e293b;
+    line-height: 1.65; margin-bottom: 6px;
+    border-left: 3px solid #6366f1; padding-left: 12px;
+  }
+  .ai-def-diff {
+    font-size: 13px; color: #4338ca; font-weight: 600; margin-bottom: 5px;
+  }
+  .ai-def-geo {
+    font-size: 13px; color: #64748b; font-style: italic; line-height: 1.55;
+  }
+  .faq-item-ai { border-left-color: #8b5cf6; background: #faf5ff; }
+  .ai-row td { background: #faf5ff; }
+
+  /* Competitor Analysis Section */
+  .comp-analysis-section { margin-bottom: 28px; }
+  .comp-header-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 14px 18px;
+    border-radius: 10px 10px 0 0;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .comp-header-bar .comp-rank {
+    background: rgba(255,255,255,0.25);
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .comp-body {
+    border: 1.5px solid #fecaca;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 20px;
+    background: white;
+  }
+  .comp-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .comp-meta-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .comp-meta-box h5 {
+    font-size: 12px; font-weight: 700; color: #ef4444;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;
+  }
+  .comp-tag {
+    display: inline-block;
+    background: white;
+    border: 1px solid #fca5a5;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dc2626;
+    margin: 3px 3px 3px 0;
+  }
+  .diff-points { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .diff-point {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-left: 3px solid #22c55e;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+  }
+  .diff-point-num {
+    background: #22c55e;
+    color: white;
+    font-size: 12px; font-weight: 800;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .diff-point-content h5 {
+    font-size: 14px; font-weight: 700; color: #166534; margin-bottom: 4px;
+  }
+  .diff-point-content p { font-size: 13px; color: #16a34a; line-height: 1.55; }
+  .content-suggestions { display: flex; flex-direction: column; gap: 8px; }
+  .content-suggestion {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 11px 14px;
+    font-size: 13px;
+  }
+  .content-suggestion-icon { font-size: 16px; flex-shrink: 0; }
+  .content-suggestion-text { color: #92400e; line-height: 1.55; }
+  .content-suggestion-text strong { color: #78350f; }
+
+  /* Checkbox Group */
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 100px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .checkbox-label:hover { border-color: var(--primary); }
+  .checkbox-label input { display: none; }
+  .checkbox-label.checked {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+  }
+
+  /* Submit Button */
+  .btn-generate {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+  }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* ===== LOADING ===== */
+  #page-loading {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    text-align: center;
+  }
+  .loading-icon { font-size: 64px; margin-bottom: 24px; animation: spin 2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .loading-sub { font-size: 15px; opacity: 0.8; margin-bottom: 40px; }
+  .loading-steps { text-align: left; max-width: 320px; }
+  .loading-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    font-size: 14px;
+    opacity: 0.5;
+    transition: opacity 0.5s;
+  }
+  .loading-step.active { opacity: 1; font-weight: 600; }
+  .loading-step.done { opacity: 0.6; }
+  .loading-step .step-icon { font-size: 18px; width: 24px; text-align: center; }
+  .progress-bar-wrap {
+    width: 320px; height: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    margin-top: 32px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: white;
+    border-radius: 3px;
+    width: 0;
+    transition: width 0.4s ease;
+  }
+
+  /* ===== REPORT PAGE ===== */
+  #page-report { display: none; }
+
+  .report-header {
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .report-header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .report-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 18px; color: var(--primary);
+  }
+  .report-logo span { font-size: 24px; }
+  .report-company-name {
+    font-size: 14px;
+    color: var(--gray-600);
+    background: var(--gray-100);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-weight: 600;
+  }
+  .header-actions { display: flex; gap: 10px; }
+  .btn-sm {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    font-family: inherit;
+  }
+  .btn-outline {
+    background: white;
+    border: 1.5px solid var(--gray-200);
+    color: var(--gray-700);
+  }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  .report-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0;
+    min-height: calc(100vh - 64px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--gray-200);
+    padding: 24px 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+  .sidebar-title {
+    padding: 0 20px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-500);
+    border-bottom: 1px solid var(--gray-100);
+    margin-bottom: 8px;
+  }
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: var(--gray-600);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-nav a:hover { background: var(--gray-50); color: var(--primary); }
+  .sidebar-nav a.active {
+    background: rgba(99,102,241,0.08);
+    color: var(--primary);
+    border-left-color: var(--primary);
+    font-weight: 700;
+  }
+  .sidebar-nav .nav-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--gray-100);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--gray-500);
+  }
+  .sidebar-nav a.active .nav-num { background: var(--primary); color: white; }
+
+  /* Main Content */
+  .report-main { padding: 32px; }
+
+  .report-section {
+    margin-bottom: 48px;
+    scroll-margin-top: 80px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+  .section-num {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    font-weight: 800;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title-wrap h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+  .section-title-wrap p {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-top: 2px;
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 16px; }
+  .card-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-high { background: #fee2e2; color: #dc2626; }
+  .badge-mid { background: #fef3c7; color: #d97706; }
+  .badge-low { background: #d1fae5; color: #065f46; }
+  .badge-primary { background: rgba(99,102,241,0.1); color: var(--primary); }
+  .badge-success { background: rgba(16,185,129,0.1); color: var(--success); }
+  .badge-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+
+  /* Status Indicators */
+  .status-ok { color: var(--success); }
+  .status-warn { color: var(--warning); }
+  .status-bad { color: var(--danger); }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--gray-200); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--gray-50); }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    color: var(--gray-700);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--gray-50); }
+
+  /* Diagnosis Cards */
+  .diag-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .diag-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .diag-title { font-weight: 700; font-size: 15px; color: var(--gray-900); }
+  .diag-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 16px; }
+  .diag-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+  }
+  .diag-item p { font-size: 13px; color: var(--gray-700); line-height: 1.5; }
+
+  /* Roadmap Steps */
+  .roadmap-steps { display: flex; flex-direction: column; gap: 16px; }
+  .roadmap-step {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+  .step-circle {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    font-weight: 800;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-content h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--gray-900); }
+  .step-content p { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+  .step-content ul { margin-top: 8px; padding-left: 16px; }
+  .step-content ul li { font-size: 13px; color: var(--gray-600); margin-bottom: 3px; }
+  .step-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .step-period { font-size: 12px; color: var(--gray-500); font-weight: 600; white-space: nowrap; }
+
+  /* Service Cards */
+  .service-cards { display: flex; flex-direction: column; gap: 24px; }
+  .service-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .service-card-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    padding: 20px 24px;
+    color: white;
+  }
+  .service-card-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .service-card-header p { font-size: 13px; opacity: 0.85; }
+  .service-card-body { padding: 24px; }
+  .service-definition {
+    background: rgba(99,102,241,0.06);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+    font-style: italic;
+    color: var(--gray-700);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .service-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .service-detail h4 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+  }
+  .service-detail ul { padding-left: 16px; }
+  .service-detail ul li { font-size: 13px; color: var(--gray-700); margin-bottom: 6px; line-height: 1.5; }
+  .page-structure { background: var(--gray-50); border-radius: 8px; padding: 16px; }
+  .page-structure .h1 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+  .page-structure .h2 { font-size: 13px; font-weight: 600; color: var(--gray-600); margin: 8px 0 4px 12px; }
+  .page-structure .h3 { font-size: 12px; font-weight: 500; color: var(--gray-500); margin: 4px 0 4px 24px; }
+  .example-sentences { margin-top: 16px; }
+  .example-sentence {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.6;
+  }
+  .example-sentence::before { content: '💬 '; }
+
+  /* FAQ Block */
+  .svc-faq-block {
+    margin-top: 24px;
+    border-top: 2px solid var(--gray-100);
+    padding-top: 20px;
+  }
+  .svc-faq-block h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  .faq-item {
+    background: #f8fafc;
+    border: 1px solid var(--gray-200);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .faq-item-question {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .faq-item-question::before {
+    content: 'Q';
+    background: var(--primary);
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .faq-item-answer {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.65;
+    padding-left: 26px;
+  }
+  .faq-type-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* Content Strategy Table */
+  .content-table-wrap {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* Tabs */
+  .tabs { margin-bottom: 24px; }
+  .tab-list {
+    display: flex;
+    border-bottom: 2px solid var(--gray-200);
+    gap: 0;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-500);
+    cursor: pointer;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .expansion-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .expansion-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .expansion-card h4 { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .expansion-card h4 .icon { font-size: 18px; }
+  .problem-list, .content-list { list-style: none; padding: 0; margin: 0; }
+  .problem-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--gray-700);
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .problem-list li::before { content: '❗'; font-size: 12px; }
+  .content-list li {
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--gray-700);
+    border-bottom: 1px solid var(--gray-100);
+    display: flex; align-items: flex-start; gap: 6px;
+  }
+  .content-list li::before { content: '📝'; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+  .example-text {
+    background: var(--gray-50);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    font-style: italic;
+    border-left: 3px solid var(--primary);
+  }
+
+  /* Schema Code Blocks */
+  .schema-cards { display: flex; flex-direction: column; gap: 20px; }
+  .schema-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .schema-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .schema-card-title { font-weight: 700; font-size: 15px; color: var(--gray-900); }
+  .schema-card-meta { display: flex; gap: 8px; align-items: center; }
+  .schema-body { padding: 20px; }
+  .schema-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .schema-info-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+  }
+  .schema-info-item p { font-size: 13px; color: var(--gray-700); }
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .code-lang { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; }
+  .btn-copy {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn-copy:hover { background: rgba(255,255,255,0.2); color: white; }
+  .code-block pre {
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #cdd6f4;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  }
+  .json-key { color: #89b4fa; }
+  .json-str { color: #a6e3a1; }
+  .json-num { color: #fab387; }
+
+  /* Accordion */
+  .accordion { display: flex; flex-direction: column; gap: 12px; }
+  .accordion-item {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .accordion-header:hover { background: var(--gray-50); }
+  .accordion-title { display: flex; align-items: center; gap: 12px; }
+  .accordion-title h3 { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+  .accordion-title .icon { font-size: 20px; }
+  .accordion-arrow { font-size: 12px; color: var(--gray-400); transition: transform 0.2s; }
+  .accordion-item.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body {
+    display: none;
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--gray-100);
+  }
+  .accordion-item.open .accordion-body { display: block; }
+  .accordion-inner { padding-top: 16px; }
+  .strategy-section { margin-bottom: 20px; }
+  .strategy-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .strategy-list { padding-left: 16px; }
+  .strategy-list li { font-size: 13px; color: var(--gray-700); margin-bottom: 6px; line-height: 1.5; }
+  .effect-box {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #065f46;
+    margin-top: 12px;
+  }
+  .effect-box::before { content: '📈 예상 효과: '; font-weight: 700; }
+
+  /* Timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .phase-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 14px 20px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    font-weight: 800;
+    font-size: 14px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .phase-header:first-child { margin-top: 0; }
+  .phase-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+  }
+  .week-rows { border: 1px solid var(--gray-200); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; margin-bottom: 4px; }
+  .week-row {
+    display: grid;
+    grid-template-columns: 80px 2fr 2fr 2fr;
+    border-bottom: 1px solid var(--gray-100);
+    background: white;
+  }
+  .week-row:last-child { border-bottom: none; }
+  .week-row:hover { background: var(--gray-50); }
+  .week-cell {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-right: 1px solid var(--gray-100);
+    color: var(--gray-700);
+    line-height: 1.5;
+  }
+  .week-cell:last-child { border-right: none; }
+  .week-num {
+    font-weight: 800;
+    color: var(--primary);
+    background: rgba(99,102,241,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .week-header {
+    background: var(--gray-50);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-500);
+    border-bottom: 2px solid var(--gray-200) !important;
+  }
+  .week-header .week-cell { color: var(--gray-500); }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 20px; }
+  .kpi-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .kpi-card.kpi-1::before { background: linear-gradient(to right, var(--primary), var(--secondary)); }
+  .kpi-card.kpi-2::before { background: linear-gradient(to right, var(--success), #34d399); }
+  .kpi-card.kpi-3::before { background: linear-gradient(to right, var(--warning), #fcd34d); }
+  .kpi-card.kpi-4::before { background: linear-gradient(to right, var(--danger), #f87171); }
+  .kpi-icon { font-size: 36px; margin-bottom: 12px; }
+  .kpi-title { font-size: 16px; font-weight: 800; color: var(--gray-900); margin-bottom: 16px; }
+  .kpi-target {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .kpi-target-label { font-size: 12px; color: var(--gray-500); margin-bottom: 16px; }
+  .kpi-details { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
+  .kpi-detail-row { display: flex; justify-content: space-between; font-size: 12px; }
+  .kpi-detail-row span:first-child { color: var(--gray-500); font-weight: 600; }
+  .kpi-detail-row span:last-child { color: var(--gray-700); font-weight: 600; }
+
+  .measurement-section {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+  }
+  .measurement-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gray-900); }
+  .measurement-steps { display: flex; flex-direction: column; gap: 12px; }
+  .measurement-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px;
+    background: var(--gray-50);
+    border-radius: 8px;
+  }
+  .measurement-step .num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .measurement-step .text h4 { font-size: 14px; font-weight: 700; color: var(--gray-800); margin-bottom: 4px; }
+  .measurement-step .text p { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+
+  /* Info boxes */
+  .info-box {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .info-box.info { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); color: #3730a3; }
+  .info-box.success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #065f46; }
+  .info-box.warning { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #92400e; }
+  .info-box .info-icon { font-size: 18px; flex-shrink: 0; }
+
+  /* Print Styles */
+  @media print {
+    .sidebar, .report-header, .header-actions, .btn-copy { display: none !important; }
+    #page-form, #page-loading { display: none !important; }
+    #page-report { display: block !important; }
+    .report-layout { grid-template-columns: 1fr; }
+    .report-main { padding: 0; }
+    .report-section { page-break-inside: avoid; margin-bottom: 32px; }
+    .code-block { background: #f5f5f5 !important; }
+    .code-block pre { color: #333 !important; }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .report-layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+    .services-grid { grid-template-columns: 1fr; }
+    .competitor-input-wrap { flex-wrap: wrap; }
+    .comp-meta-grid { grid-template-columns: 1fr; }
+    .card-grid-2, .card-grid-3, .service-detail-grid, .schema-info-grid { grid-template-columns: 1fr; }
+    .diag-grid { grid-template-columns: 1fr; }
+    .expansion-grid { grid-template-columns: 1fr; }
+    .week-row { grid-template-columns: 60px 1fr; }
+    .week-cell:nth-child(3), .week-cell:nth-child(4) { display: none; }
+    .week-header .week-cell:nth-child(3), .week-header .week-cell:nth-child(4) { display: none; }
+    .roadmap-step { grid-template-columns: 40px 1fr; }
+    .step-meta { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== AUTH PAGE ===== -->
+
+<!-- ===== FORM PAGE ===== -->
+<div id="page-form">
+  <div class="hero">
+    <div class="hero-badge">🚀 GEO Strategy Builder v2.0</div>
+    <h1>생성형 AI에서<br><span>자동으로 인용되는</span> 브랜드 구축</h1>
+    <p>ChatGPT, Perplexity, Gemini, Claude가 당신의 브랜드를 자동으로 추천하게 만드는 완전한 GEO 전략을 즉시 생성합니다.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>9단계</strong><span>체계적 전략</span></div>
+      <div class="hero-stat"><strong>경쟁사</strong><span>자동 분석</span></div>
+      <div class="hero-stat"><strong>90일</strong><span>실행 로드맵</span></div>
+      <div class="hero-stat"><strong>30+</strong><span>AI 인용 콘텐츠</span></div>
+      <div class="hero-stat"><strong>5개</strong><span>Schema 설계</span></div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <!-- AI API 설정 카드 -->
+    <div class="form-card ai-settings-card" style="margin-bottom:20px">
+      <div class="form-header" style="background:linear-gradient(135deg,#0f172a,#1e293b)">
+        <h2>🤖 AI 생성 설정 <span class="ai-badge-optional">선택</span></h2>
+        <p>OpenAI API Key를 입력하면 콘텐츠 제목·서비스 정의·FAQ를 AI가 직접 생성합니다. 미입력 시 로컬 템플릿으로 즉시 생성됩니다.</p>
+      </div>
+      <div class="form-body">
+        <!-- 서버 API 안내 -->
+        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#166534;display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:18px;flex-shrink:0">🔒</span>
+          <div>
+            <strong>서버리스 API 모드</strong> — OpenAI API Key를 브라우저에 노출하지 않습니다.<br>
+            Vercel 배포 환경에서는 <code style="background:#dcfce7;padding:1px 5px;border-radius:3px">OPENAI_API_KEY</code> 환경변수를 서버에서 자동 사용합니다.<br>
+            <span style="opacity:0.75">로컬 테스트 또는 직접 호출이 필요한 경우에만 아래에 API Key를 입력하세요.</span>
+          </div>
+        </div>
+        <div class="ai-key-row">
+          <div class="form-group" style="flex:1">
+            <label>OpenAI API Key <span style="font-size:11px;color:#6b7280;font-weight:400">(Vercel 배포 시 불필요 · 로컬 직접 호출 시 입력)</span></label>
+            <div style="position:relative">
+              <input type="password" id="ai-api-key" class="form-control" placeholder="sk-... (Vercel 환경에서는 비워두세요)" autocomplete="off" style="padding-right:80px">
+              <button onclick="toggleApiKeyVisibility()" class="btn-eye" id="btn-eye">👁 보기</button>
+            </div>
+          </div>
+          <div class="form-group" style="min-width:200px">
+            <label>API Base URL <span style="font-size:11px;color:#6b7280;font-weight:400">(직접 호출 시)</span></label>
+            <input type="text" id="ai-base-url" class="form-control" placeholder="https://api.openai.com/v1" value="https://api.openai.com/v1">
+          </div>
+          <div class="form-group" style="min-width:160px">
+            <label>모델 <span style="font-size:11px;color:#6b7280;font-weight:400">(직접 호출 시)</span></label>
+            <select id="ai-model" class="form-control">
+              <option value="gpt-4o-mini">gpt-4o-mini (빠름·저렴)</option>
+              <option value="gpt-4o">gpt-4o (고품질)</option>
+              <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+            </select>
+          </div>
+        </div>
+        <div class="ai-status-row">
+          <div class="ai-toggle-wrap">
+            <label class="ai-toggle-label">
+              <input type="checkbox" id="ai-enabled" onchange="onAiToggle(this)">
+              <span class="ai-toggle-track"><span class="ai-toggle-thumb"></span></span>
+              <span id="ai-toggle-text">AI 생성 비활성화</span>
+            </label>
+          </div>
+          <div class="ai-info-pills">
+            <span class="ai-pill ai-pill-local">✅ 로컬: GEO 진단 · 로드맵 · Schema · KPI</span>
+            <span class="ai-pill ai-pill-ai" id="ai-pill-ai">🤖 AI: 콘텐츠 제목 · 서비스 정의 · FAQ</span>
+          </div>
+          <button class="btn-sm btn-outline" style="margin-left:auto" onclick="saveApiKey()">💾 저장</button>
+        </div>
+        <div id="ai-key-saved-msg" style="display:none;font-size:12px;color:#16a34a;margin-top:6px">✅ 설정이 이 브라우저에 저장되었습니다.</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-header">
+        <h2>📋 GEO 전략 정보 입력</h2>
+        <p>아래 정보를 입력하면 맞춤형 GEO 전략 보고서가 즉시 생성됩니다</p>
+      </div>
+      <div class="form-body">
+        <!-- 기본 정보 -->
+        <div class="form-section">
+          <div class="form-section-title">기본 정보</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>회사/기관명 <span class="required">*</span></label>
+              <input type="text" id="company-name" class="form-control" placeholder="예: 마케팅어시스트 주식회사" required>
+            </div>
+            <div class="form-group">
+              <label>웹사이트 URL <span class="required">*</span></label>
+              <input type="text" id="website-url" class="form-control" placeholder="예: https://marketingassist.co.kr">
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="form-group">
+              <label>산업 분야 <span class="required">*</span></label>
+              <select id="industry" class="form-control">
+                <option value="">선택하세요</option>
+                <option value="AI/SaaS">AI / SaaS</option>
+                <option value="마케팅/광고">마케팅 / 광고</option>
+                <option value="헬스케어">헬스케어 / 의료</option>
+                <option value="교육/에듀테크">교육 / 에듀테크</option>
+                <option value="제조/물류">제조 / 물류</option>
+                <option value="이커머스/리테일">이커머스 / 리테일</option>
+                <option value="금융/핀테크">금융 / 핀테크</option>
+                <option value="법무/컨설팅">법무 / 컨설팅</option>
+                <option value="부동산">부동산</option>
+                <option value="HR/채용">HR / 채용</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>주요 고객 유형 <span class="required">*</span></label>
+              <select id="customer-type" class="form-control">
+                <option value="">선택하세요</option>
+                <option value="B2B 중소기업">B2B 중소기업</option>
+                <option value="B2B 대기업">B2B 대기업</option>
+                <option value="스타트업">스타트업</option>
+                <option value="소상공인">소상공인</option>
+                <option value="B2C 일반소비자">B2C 일반소비자</option>
+                <option value="개발자/기술직">개발자 / 기술직</option>
+                <option value="의료 전문가">의료 전문가</option>
+                <option value="교육기관">교육기관</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 핵심 서비스 -->
+        <div class="form-section">
+          <div class="form-section-title">핵심 서비스 / 제품 (최소 3개)</div>
+          <div class="services-grid">
+            <div class="service-input-wrap">
+              <div class="service-num">1</div>
+              <input type="text" id="svc1" class="form-control" placeholder="예: AI 마케팅 자동화 솔루션">
+            </div>
+            <div class="service-input-wrap">
+              <div class="service-num">2</div>
+              <input type="text" id="svc2" class="form-control" placeholder="예: SEO 콘텐츠 최적화 서비스">
+            </div>
+            <div class="service-input-wrap">
+              <div class="service-num">3</div>
+              <input type="text" id="svc3" class="form-control" placeholder="예: 브랜드 분석 대시보드">
+            </div>
+            <div class="service-input-wrap">
+              <div class="service-num">4</div>
+              <input type="text" id="svc4" class="form-control" placeholder="예: 고객 데이터 분석 플랫폼 (선택)">
+            </div>
+            <div class="service-input-wrap">
+              <div class="service-num">5</div>
+              <input type="text" id="svc5" class="form-control" placeholder="예: 광고 성과 최적화 툴 (선택)">
+            </div>
+          </div>
+        </div>
+
+        <!-- 주요 해결 문제 -->
+        <div class="form-section">
+          <div class="form-section-title">주요 해결 문제 (복수 선택 가능)</div>
+          <div class="checkbox-group" id="problems-group">
+            <label class="checkbox-label"><input type="checkbox" value="업무 자동화">업무 자동화</label>
+            <label class="checkbox-label"><input type="checkbox" value="마케팅 효율 개선">마케팅 효율</label>
+            <label class="checkbox-label"><input type="checkbox" value="고객 데이터 분석">데이터 분석</label>
+            <label class="checkbox-label"><input type="checkbox" value="비용 절감">비용 절감</label>
+            <label class="checkbox-label"><input type="checkbox" value="생산성 향상">생산성 향상</label>
+            <label class="checkbox-label"><input type="checkbox" value="브랜드 인지도 향상">브랜드 인지도</label>
+            <label class="checkbox-label"><input type="checkbox" value="영업 지원">영업 지원</label>
+            <label class="checkbox-label"><input type="checkbox" value="고객 경험 개선">고객 경험</label>
+            <label class="checkbox-label"><input type="checkbox" value="리드 생성">리드 생성</label>
+            <label class="checkbox-label"><input type="checkbox" value="디지털 전환">디지털 전환</label>
+          </div>
+        </div>
+
+        <!-- 경쟁사 분석 -->
+        <div class="form-section">
+          <div class="form-section-title">경쟁사 분석 <span style="font-size:12px;font-weight:500;color:#6b7280">(선택 · 최대 3개)</span></div>
+          <div style="background:#f0f4ff;border:1.5px solid #c7d2fe;border-radius:10px;padding:14px 16px;margin-bottom:14px;font-size:13px;color:#4338ca;line-height:1.6">
+            <strong>🔍 경쟁사 URL을 입력하면</strong> 경쟁사 서비스·키워드를 자동 추출하고, 우리 서비스와의 차별화 포인트 5개 및 추가 콘텐츠 제안을 보고서에 자동 생성합니다.
+          </div>
+          <div class="competitor-inputs">
+            <div class="competitor-input-wrap">
+              <div class="competitor-num">1</div>
+              <input type="text" id="comp1" class="form-control" placeholder="예: https://competitor.co.kr">
+              <input type="text" id="comp1name" class="form-control" placeholder="경쟁사명 (선택)" style="max-width:180px">
+            </div>
+            <div class="competitor-input-wrap">
+              <div class="competitor-num">2</div>
+              <input type="text" id="comp2" class="form-control" placeholder="예: https://rival2.com">
+              <input type="text" id="comp2name" class="form-control" placeholder="경쟁사명 (선택)" style="max-width:180px">
+            </div>
+            <div class="competitor-input-wrap">
+              <div class="competitor-num">3</div>
+              <input type="text" id="comp3" class="form-control" placeholder="예: https://rival3.io">
+              <input type="text" id="comp3name" class="form-control" placeholder="경쟁사명 (선택)" style="max-width:180px">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-generate" onclick="startGeneration()">
+          <span>🚀</span> GEO 전략 보고서 생성하기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOADING PAGE ===== -->
+<div id="page-loading">
+  <div class="loading-icon">⚙️</div>
+  <div class="loading-title">GEO 전략 보고서를 생성하고 있습니다</div>
+  <div class="loading-sub">입력하신 정보를 기반으로 맞춤형 전략을 설계 중...</div>
+  <div class="loading-steps">
+    <div class="loading-step" id="ls0"><span class="step-icon">🏴</span> 경쟁사 URL 분석 및 차별화 포인트 추출 중...</div>
+    <div class="loading-step" id="ls-ai"><span class="step-icon">🤖</span> AI 콘텐츠 생성 준비 중...</div>
+    <div class="loading-step" id="ls1"><span class="step-icon">🔍</span> 현재 사이트 GEO 진단 분석 중...</div>
+    <div class="loading-step" id="ls2"><span class="step-icon">🗺️</span> 전체 실행 로드맵 설계 중...</div>
+    <div class="loading-step" id="ls3"><span class="step-icon">📄</span> 서비스 페이지 구조 설계 중...</div>
+    <div class="loading-step" id="ls4"><span class="step-icon">📝</span> AI 인용용 콘텐츠 30개 생성 중...</div>
+    <div class="loading-step" id="ls4b"><span class="step-icon">❓</span> 서비스별 FAQ 5개 자동 생성 중...</div>
+    <div class="loading-step" id="ls5"><span class="step-icon">🔧</span> Schema JSON-LD 코드 생성 중...</div>
+    <div class="loading-step" id="ls6"><span class="step-icon">📊</span> KPI 및 90일 로드맵 완성 중...</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<!-- ===== REPORT PAGE ===== -->
+<div id="page-report">
+  <div class="report-header">
+    <div class="report-header-inner">
+      <div class="report-logo"><span>⚡</span> GEO Strategy Builder</div>
+      <div class="report-company-name" id="report-company-badge"></div>
+      <div class="header-actions">
+        <button class="btn-sm btn-outline" onclick="backToForm()">← 다시 입력</button>
+        <button class="btn-sm btn-primary" onclick="window.print()">🖨️ PDF 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-layout">
+    <nav class="sidebar">
+      <div class="sidebar-title">GEO 전략 보고서</div>
+      <div class="sidebar-nav">
+        <a href="#s1" onclick="scrollTo('s1')"><span class="nav-num">1</span> GEO 진단</a>
+        <a href="#s-industry-expansion" onclick="scrollTo('s-industry-expansion')" style="border-left:3px solid #f59e0b"><span class="nav-num" style="background:#f59e0b">🔍</span> 산업 확장 키워드</a>
+        <a href="#s2" onclick="scrollTo('s2')"><span class="nav-num">2</span> 실행 로드맵</a>
+        <a href="#s3" onclick="scrollTo('s3')"><span class="nav-num">3</span> 서비스 페이지 설계</a>
+        <a href="#s4" onclick="scrollTo('s4')"><span class="nav-num">4</span> AI 인용 콘텐츠</a>
+        <a href="#s5" onclick="scrollTo('s5')"><span class="nav-num">5</span> 콘텐츠 확장</a>
+        <a href="#s6" onclick="scrollTo('s6')"><span class="nav-num">6</span> Schema 설계</a>
+        <a href="#s7" onclick="scrollTo('s7')"><span class="nav-num">7</span> 외부 GEO 전략</a>
+        <a href="#s8" onclick="scrollTo('s8')"><span class="nav-num">8</span> 90일 로드맵</a>
+        <a href="#s9" onclick="scrollTo('s9')"><span class="nav-num">9</span> KPI 측정</a>
+        <a href="#s-competitor" id="nav-competitor" onclick="scrollTo('s-competitor')" style="display:none;border-left:3px solid #ef4444"><span class="nav-num" style="background:#ef4444">🏴</span> 경쟁사 분석</a>
+      </div>
+    </nav>
+
+    <main class="report-main" id="report-content">
+      <!-- Generated dynamically -->
+    </main>
+  </div>
+</div>
+
+<script>
+// ===========================
+// AUTH SYSTEM (localStorage)
+// ===========================
+window.addEventListener('DOMContentLoaded', () => {
+  // AI API Key 복원
+  loadApiKey();
+});
+
+// ===========================
+// GLOBAL STATE
+// ===========================
+let formData = {};
+
+// ===========================
+// AI ENGINE — HYBRID GENERATION
+// ===========================
+
+// API Key 관리
+function loadApiKey() {
+  const key     = localStorage.getItem('geo_ai_key') || '';
+  const baseUrl = localStorage.getItem('geo_ai_base') || 'https://api.openai.com/v1';
+  const model   = localStorage.getItem('geo_ai_model') || 'gpt-4o-mini';
+  const enabled = localStorage.getItem('geo_ai_enabled') === 'true';
+  if (key) document.getElementById('ai-api-key').value = key;
+  if (baseUrl) document.getElementById('ai-base-url').value = baseUrl;
+  const modelEl = document.getElementById('ai-model');
+  if (modelEl) {
+    // 저장된 모델이 옵션에 없으면 추가
+    let found = false;
+    for (let opt of modelEl.options) { if (opt.value === model) { found = true; break; } }
+    if (!found) { const o = new Option(model, model); modelEl.add(o); }
+    modelEl.value = model;
+  }
+  const cb = document.getElementById('ai-enabled');
+  if (cb) { cb.checked = enabled; onAiToggle(cb); }
+}
+
+function saveApiKey() {
+  const key     = document.getElementById('ai-api-key').value.trim();
+  const baseUrl = document.getElementById('ai-base-url').value.trim() || 'https://api.openai.com/v1';
+  const model   = document.getElementById('ai-model').value;
+  const enabled = document.getElementById('ai-enabled').checked;
+  localStorage.setItem('geo_ai_key',     key);
+  localStorage.setItem('geo_ai_base',    baseUrl);
+  localStorage.setItem('geo_ai_model',   model);
+  localStorage.setItem('geo_ai_enabled', enabled);
+  const msg = document.getElementById('ai-key-saved-msg');
+  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
+}
+
+function toggleApiKeyVisibility() {
+  const inp = document.getElementById('ai-api-key');
+  const btn = document.getElementById('btn-eye');
+  if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈 숨기기'; }
+  else                         { inp.type = 'password'; btn.textContent = '👁 보기'; }
+}
+
+function onAiToggle(cb) {
+  const text = document.getElementById('ai-toggle-text');
+  const pill = document.getElementById('ai-pill-ai');
+  if (cb.checked) {
+    if (text) text.textContent = 'AI 생성 활성화됨';
+    if (pill) pill.classList.add('active');
+  } else {
+    if (text) text.textContent = 'AI 생성 비활성화';
+    if (pill) pill.classList.remove('active');
+  }
+  localStorage.setItem('geo_ai_enabled', cb.checked);
+}
+
+// 로딩 스텝 텍스트 업데이트 헬퍼
+function setLoadingStep(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.querySelector('span:last-child') && (el.innerHTML = el.innerHTML); // no-op if icon-only
+}
+
+// ── /api/generate 단일 호출 (Vercel Serverless) ──────────────────────
+// API Key 불필요 — 서버에서 OPENAI_API_KEY 환경변수 사용
+// 직접 Key 입력 모드 (fallback)도 함께 지원
+
+// 자동 감지: Vercel 배포 환경인지 확인
+function isVercelEnv() {
+  const host = window.location.hostname;
+  // vercel.app, 커스텀 도메인(gensparkclaw 포함), localhost 모두 /api 경로 사용
+  return !host.includes('file://');
+}
+
+async function callVercelAPI(d) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 28000); // 28초 타임아웃
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        industry:      d.industry,
+        customer_type: d.customer,
+        services:      d.services,
+        problems:      d.problems,
+      }),
+    });
+
+    clearTimeout(timer);
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      // fallback 플래그 확인
+      if (err.fallback) throw new Error('FALLBACK:' + (err.message || 'AI 생성 실패'));
+      throw new Error(`서버 오류 ${res.status}: ${err.error || res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('FALLBACK:요청 타임아웃 (28초 초과)');
+    throw e;
+  }
+}
+
+// 직접 OpenAI 호출 (API Key 직접 입력 모드)
+async function callOpenAIDirect(d) {
+  const key     = (document.getElementById('ai-api-key')?.value || '').trim()
+               || localStorage.getItem('geo_ai_key') || '';
+  const baseUrl = (document.getElementById('ai-base-url')?.value || '').trim()
+               || localStorage.getItem('geo_ai_base')
+               || 'https://api.openai.com/v1';
+  const model   = document.getElementById('ai-model')?.value
+               || localStorage.getItem('geo_ai_model')
+               || 'gpt-4o-mini';
+
+  if (!key) throw new Error('FALLBACK:API Key 없음');
+
+  const svcList  = d.services.map((s, i) => `${i+1}. ${s}`).join('\n');
+  const prompt   = `다음 회사 정보로 GEO 콘텐츠를 생성하세요.\n산업: ${d.industry}\n고객: ${d.customer}\n서비스:\n${svcList}\n문제: ${d.problems.slice(0,5).join(', ')}\n\n아래 JSON 형식으로만 응답:\n{\n  "titles": [{"title":"","intent":"질문형","targetService":"","citation":"높음"}],\n  "definitions": [{"service":"","anchor":"","differentiator":"","geoSentence":""}],\n  "faqs": {"서비스명": [{"type":"정의","q":"","a":""}]}\n}\n콘텐츠 제목 20개(70% 질문형), 서비스별 정의문장, 서비스별 FAQ 5개(정의/비용/적용방법/사례/효과).`;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const res = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model, temperature: 0.85, max_tokens: 3500,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: 'GEO 전문가. 반드시 JSON만 응답. 한국어.' },
+          { role: 'user',   content: prompt },
+        ],
+      }),
+    });
+    clearTimeout(timer);
+    if (!res.ok) { const e = await res.text(); throw new Error(`OpenAI ${res.status}: ${e.slice(0,200)}`); }
+    const json = await res.json();
+    return JSON.parse(json.choices?.[0]?.message?.content || '{}');
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('FALLBACK:직접 호출 타임아웃');
+    throw e;
+  }
+}
+
+// ── 응답 → d.aiData 매핑 ────────────────────────────────────────────────
+function mapAiResponse(result, d) {
+  d.aiData   = {};
+  d.aiErrors = [];
+
+  // titles
+  const titles = result.titles;
+  if (Array.isArray(titles) && titles.length > 0) {
+    d.aiData.contentTitles = titles.slice(0, 20);
+  } else {
+    d.aiErrors.push({ section: '콘텐츠 제목', error: '응답 없음 — 로컬 템플릿 사용' });
+  }
+
+  // definitions (배열)
+  const defs = result.definitions;
+  if (Array.isArray(defs) && defs.length > 0) {
+    d.aiData.definitions = defs;
+  } else {
+    d.aiErrors.push({ section: '서비스 정의', error: '응답 없음 — 로컬 템플릿 사용' });
+  }
+
+  // faqs (객체 { 서비스명: [...] } 또는 배열)
+  const rawFaqs = result.faqs;
+  if (rawFaqs && typeof rawFaqs === 'object') {
+    if (!Array.isArray(rawFaqs)) {
+      // 객체 형태 { "서비스명": [...] } → 배열 형태로 변환해 저장
+      d.aiData.faqs = Object.entries(rawFaqs).map(([svc, items]) => ({
+        service: svc,
+        items: Array.isArray(items) ? items : [],
+      }));
+    } else {
+      d.aiData.faqs = rawFaqs; // 이미 배열 형태
+    }
+  } else {
+    d.aiErrors.push({ section: 'FAQ', error: '응답 없음 — 로컬 템플릿 사용' });
+  }
+}
+
+// ── 메인: Hybrid AI 실행 ─────────────────────────────────────────────────
+async function runHybridAI(d) {
+  const enabled = document.getElementById('ai-enabled')?.checked
+               || localStorage.getItem('geo_ai_enabled') === 'true';
+
+  if (!enabled) {
+    d.aiData = null; d.aiErrors = [];
+    return;
+  }
+
+  d.aiData   = {};
+  d.aiErrors = [];
+
+  let result = null;
+  let usedMode = '';
+
+  // Mode 1: Vercel API (API Key 불필요 — 서버 환경변수 사용)
+  try {
+    result   = await callVercelAPI(d);
+    usedMode = 'vercel';
+  } catch (vercelErr) {
+    const isFallback = vercelErr.message?.startsWith('FALLBACK:');
+
+    // Mode 2: 직접 OpenAI 호출 (API Key 입력된 경우)
+    const directKey = (document.getElementById('ai-api-key')?.value || '').trim()
+                   || localStorage.getItem('geo_ai_key') || '';
+    if (directKey) {
+      try {
+        result   = await callOpenAIDirect(d);
+        usedMode = 'direct';
+      } catch (directErr) {
+        // 둘 다 실패 → 완전 fallback
+        d.aiData   = null;
+        d.aiErrors = [{ section: '전체 AI 생성', error: directErr.message?.replace('FALLBACK:','') || '알 수 없는 오류' }];
+        return;
+      }
+    } else {
+      // Vercel API 없고 Key도 없음 → fallback
+      d.aiData   = null;
+      d.aiErrors = isFallback
+        ? [{ section: '전체 AI 생성', error: vercelErr.message.replace('FALLBACK:','') }]
+        : [{ section: '전체 AI 생성', error: vercelErr.message }];
+      return;
+    }
+  }
+
+  if (result) mapAiResponse(result, d);
+  console.log(`[AI] 생성 완료 (mode: ${usedMode})`, d.aiData);
+}
+
+// AI 데이터에서 서비스 정의 조회
+function getAiDefinition(svc, d) {
+  const defs = d.aiData?.definitions;
+  if (!defs) return null;
+  return defs.find(def =>
+    def.service === svc ||
+    svc.includes(def.service) ||
+    (def.service && def.service.includes(svc.split(' ')[0]))
+  ) || null;
+}
+
+// AI 데이터에서 FAQ 조회
+function getAiFaqs(svc, d) {
+  const faqGroups = d.aiData?.faqs;
+  if (!faqGroups) return null;
+  const found = faqGroups.find(f =>
+    f.service === svc ||
+    svc.includes(f.service) ||
+    (f.service && f.service.includes(svc.split(' ')[0]))
+  );
+  return found?.items || null;
+}
+
+// ===========================
+// CHECKBOX HANDLING
+// ===========================
+document.querySelectorAll('.checkbox-label').forEach(label => {
+  label.addEventListener('click', () => {
+    const cb = label.querySelector('input');
+    cb.checked = !cb.checked;
+    label.classList.toggle('checked', cb.checked);
+  });
+});
+
+// ===========================
+// START GENERATION
+// ===========================
+function startGeneration() {
+  const company = document.getElementById('company-name').value.trim();
+  const url = document.getElementById('website-url').value.trim();
+  const industry = document.getElementById('industry').value;
+  const customer = document.getElementById('customer-type').value;
+  const svc1 = document.getElementById('svc1').value.trim() || '서비스 1';
+  const svc2 = document.getElementById('svc2').value.trim() || '서비스 2';
+  const svc3 = document.getElementById('svc3').value.trim() || '서비스 3';
+  const svc4 = document.getElementById('svc4').value.trim();
+  const svc5 = document.getElementById('svc5').value.trim();
+
+  if (!company || !industry || !customer) {
+    alert('회사명, 산업 분야, 주요 고객 유형은 필수 항목입니다.');
+    return;
+  }
+
+  const problems = [];
+  document.querySelectorAll('#problems-group input:checked').forEach(cb => problems.push(cb.value));
+  if (problems.length === 0) problems.push('업무 자동화', '마케팅 효율 개선', '비용 절감');
+
+  const services = [svc1, svc2, svc3];
+  if (svc4) services.push(svc4);
+  if (svc5) services.push(svc5);
+
+  // 경쟁사 데이터 수집
+  const competitors = [];
+  for (let i = 1; i <= 3; i++) {
+    const cu = (document.getElementById('comp'+i)?.value || '').trim();
+    const cn = (document.getElementById('comp'+i+'name')?.value || '').trim();
+    if (cu) competitors.push({ url: cu, name: cn || extractDomainName(cu) });
+  }
+
+  formData = { company, url: url || 'https://' + company.toLowerCase().replace(/\s/g,'-') + '.co.kr', industry, customer, services, problems, competitors };
+
+  showLoading();
+}
+
+async function showLoading() {
+  document.getElementById('page-form').style.display = 'none';
+  const loading = document.getElementById('page-loading');
+  loading.style.display = 'flex';
+
+  // 경쟁사 없으면 ls0 스텝 숨김
+  const hasCompetitor = formData.competitors && formData.competitors.length > 0;
+  const ls0el = document.getElementById('ls0');
+  if (ls0el) ls0el.style.display = hasCompetitor ? '' : 'none';
+
+  // AI 활성 여부 확인
+  const aiEnabled = document.getElementById('ai-enabled')?.checked
+                 || localStorage.getItem('geo_ai_enabled') === 'true';
+  const aiKey = (document.getElementById('ai-api-key')?.value || '').trim()
+             || localStorage.getItem('geo_ai_key') || '';
+  const hasAI = aiEnabled && !!aiKey;
+
+  // ls-ai 스텝 가시성 제어
+  const lsAiEl = document.getElementById('ls-ai');
+  if (lsAiEl) lsAiEl.style.display = hasAI ? '' : 'none';
+
+  const allSteps = ['ls0','ls-ai','ls1','ls2','ls3','ls4','ls4b','ls5','ls6'];
+  let activeSteps = allSteps
+    .filter(s => !(s === 'ls0'   && !hasCompetitor))
+    .filter(s => !(s === 'ls-ai' && !hasAI));
+
+  const bar = document.getElementById('progress-bar');
+  let current = 0;
+
+  // 프로그레스 애니메이션 (AI 호출 구간 전까지)
+  const AI_STEP = hasAI ? activeSteps.indexOf('ls-ai') : -1;
+
+  function advanceStep() {
+    return new Promise(resolve => {
+      if (current < activeSteps.length) {
+        if (current > 0) {
+          document.getElementById(activeSteps[current-1])?.classList.remove('active');
+          document.getElementById(activeSteps[current-1])?.classList.add('done');
+        }
+        document.getElementById(activeSteps[current])?.classList.add('active');
+        bar.style.width = ((current+1) / activeSteps.length * 100) + '%';
+        current++;
+        setTimeout(resolve, 320);
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  // Phase 1: ls0 (있으면)
+  if (hasCompetitor) await advanceStep();
+
+  // Phase 2: AI 호출 (있으면)
+  if (hasAI) {
+    await advanceStep(); // ls-ai 활성화
+    // AI 스텝 텍스트를 진행 중으로 변경
+    const lsAiEl2 = document.getElementById('ls-ai');
+    if (lsAiEl2) lsAiEl2.innerHTML = `<span class="step-icon">🤖</span> AI 콘텐츠 생성 중... <span style="font-size:11px;opacity:0.7">(최대 30초)</span>`;
+
+    // 실제 AI 호출
+    await runHybridAI(formData);
+
+    // AI 완료 후 스텝 done 처리
+    if (lsAiEl2) lsAiEl2.innerHTML = `<span class="step-icon">✅</span> AI 콘텐츠 생성 완료`;
+    if (lsAiEl2) { lsAiEl2.classList.remove('active'); lsAiEl2.classList.add('done'); }
+  }
+
+  // Phase 3: 나머지 스텝 순차 진행
+  const remaining = activeSteps.slice(current);
+  for (let i = 0; i < remaining.length; i++) {
+    if (i > 0) {
+      document.getElementById(remaining[i-1])?.classList.remove('active');
+      document.getElementById(remaining[i-1])?.classList.add('done');
+    }
+    document.getElementById(remaining[i])?.classList.add('active');
+    bar.style.width = ((current + i + 1) / activeSteps.length * 100) + '%';
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  bar.style.width = '100%';
+  await new Promise(r => setTimeout(r, 300));
+  showReport();
+}
+
+function showReport() {
+  document.getElementById('page-loading').style.display = 'none';
+  document.getElementById('page-report').style.display = 'block';
+  document.getElementById('report-company-badge').textContent = formData.company;
+  document.getElementById('report-content').innerHTML = generateReport(formData);
+
+  // AI 오류 배너 (부분 실패 시)
+  const errs = formData.aiErrors;
+  if (errs && errs.length > 0 && formData.aiData) {
+    const banner = document.createElement('div');
+    banner.className = 'ai-error-banner';
+    banner.style.cssText = 'margin:16px 32px;';
+    banner.innerHTML = `⚠️ <div><strong>일부 AI 생성 항목이 실패</strong>해 로컬 템플릿으로 대체되었습니다.<br>
+      실패 항목: ${errs.map(e => `<strong>${e.section}</strong> (${e.error})`).join(' · ')}</div>`;
+    const content = document.getElementById('report-content');
+    content.insertBefore(banner, content.firstChild);
+  }
+
+  // 경쟁사 네비 표시 여부
+  const navComp = document.getElementById('nav-competitor');
+  if (navComp) {
+    navComp.style.display = (formData.competitors && formData.competitors.length > 0) ? '' : 'none';
+  }
+  window.scrollTo(0, 0);
+  initAccordions();
+  initTabs();
+  highlightActiveNav();
+}
+
+function backToForm() {
+  document.getElementById('page-report').style.display = 'none';
+  document.getElementById('page-form').style.display = 'flex';
+  window.scrollTo(0, 0);
+}
+
+function scrollTo(id) {
+  event.preventDefault();
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===========================
+// INDUSTRY EXPANSION ENGINE
+// ===========================
+const INDUSTRY_EXPANSION_MAP = {
+  // 제조·생산
+  '제조': ['스마트팩토리', '생산 자동화', '산업 자동화', '제조 데이터 분석', 'MES/ERP 연동'],
+  '제조업': ['스마트팩토리', '생산 자동화', '산업 자동화', '제조 데이터 분석', 'MES/ERP 연동'],
+  '스마트팩토리': ['제조 IoT', '공장 자동화', '산업 데이터 분석', '품질 관리 자동화', '공급망 최적화'],
+  // IT·소프트웨어
+  'IT': ['SaaS', 'B2B 소프트웨어', '클라우드 인프라', '엔터프라이즈 솔루션', 'DevOps'],
+  '소프트웨어': ['SaaS', 'B2B 소프트웨어', '클라우드 서비스', 'API 연동', '기업용 솔루션'],
+  'AI': ['생성형 AI', 'AI 자동화', 'LLM 활용', 'AI 에이전트', '머신러닝 서비스'],
+  'SaaS': ['클라우드 소프트웨어', 'B2B SaaS', 'PLG(제품주도성장)', '구독형 서비스', 'API 마켓플레이스'],
+  // 유통·커머스
+  '유통': ['이커머스', '옴니채널 유통', '물류 자동화', '재고 관리', '라스트마일 배송'],
+  '이커머스': ['온라인 쇼핑몰', 'D2C 커머스', '커머스 자동화', '물류 풀필먼트', '리텐션 마케팅'],
+  '커머스': ['이커머스', 'D2C', '쇼핑몰 운영', '물류 최적화', '고객 재구매 전략'],
+  '물류': ['라스트마일 배송', '물류 자동화', '창고 관리(WMS)', '공급망 최적화', '풀필먼트 서비스'],
+  // 금융
+  '금융': ['핀테크', '디지털 금융', '자산 관리', '보험 테크', '지급결제'],
+  '핀테크': ['디지털 뱅킹', '간편결제', '대출 플랫폼', '자산 관리 앱', '블록체인 금융'],
+  '보험': ['인슈어테크', '보험 디지털화', '손해보험 자동화', '보험 청구 자동화', '보험 비교 플랫폼'],
+  // 헬스케어
+  '헬스케어': ['디지털 헬스', '원격 진료', '의료 AI', '병원 정보 시스템', '건강 데이터 분석'],
+  '의료': ['의료 AI', '전자의무기록(EMR)', '원격 진료', '의료 영상 분석', '스마트 병원'],
+  '바이오': ['바이오테크', '신약 개발 AI', '임상시험 관리', '바이오 데이터 분석', '유전체 분석'],
+  // 교육
+  '교육': ['에듀테크', '이러닝', 'AI 튜터', '학습 관리 시스템(LMS)', '맞춤형 학습'],
+  '에듀테크': ['AI 교육 플랫폼', '온라인 학습', '비대면 교육', '학습 데이터 분석', '콘텐츠 자동화'],
+  // 부동산·건설
+  '부동산': ['프롭테크', '부동산 플랫폼', '임대 관리', '부동산 데이터 분석', '스마트 빌딩'],
+  '건설': ['건설 자동화', '스마트 건설', 'BIM(건물정보모델)', '건설 안전 관리', '공정 관리 자동화'],
+  // 마케팅·광고
+  '마케팅': ['퍼포먼스 마케팅', '콘텐츠 마케팅', '마케팅 자동화', 'CRM 마케팅', 'GEO 마케팅'],
+  '광고': ['프로그래매틱 광고', '디지털 광고 자동화', '광고 성과 분석', 'AI 광고 최적화', 'ROAS 향상'],
+  // 식품·외식
+  '식품': ['푸드테크', '식품 유통 자동화', '식품 안전 관리', '외식 플랫폼', '배달 서비스'],
+  '외식': ['외식 자동화', 'POS 시스템', '배달 플랫폼', '식자재 관리', '매장 운영 효율화'],
+  // HR·조직
+  'HR': ['HR테크', '채용 자동화', '직원 경험 관리', '급여 자동화', '조직 분석'],
+  '인사': ['HR 자동화', '채용 플랫폼', '인재 관리', '직원 성과 관리', '조직 문화 개선'],
+  // 에너지·환경
+  '에너지': ['스마트 에너지', '신재생에너지', '에너지 효율화', 'ESG 관리', '탄소 중립 솔루션'],
+  '환경': ['ESG 데이터 관리', '탄소 배출 모니터링', '친환경 공급망', '지속가능경영', '환경 규제 대응'],
+  // 물 / 기타
+  '스타트업': ['B2B SaaS', 'PLG 성장 전략', '초기 PMF 검증', 'SaaS 마케팅', '투자 유치 전략'],
+  '컨설팅': ['경영 컨설팅', '디지털 전환 컨설팅', 'IT 컨설팅', '전략 컨설팅', '성과 개선 컨설팅'],
+};
+
+// 산업명에서 확장 키워드 3~5개 추출
+function expandIndustry(industry) {
+  if (!industry) return [];
+  const lower = industry.toLowerCase();
+
+  // 1) 정확 매칭
+  for (const key of Object.keys(INDUSTRY_EXPANSION_MAP)) {
+    if (industry === key || lower === key.toLowerCase()) {
+      return INDUSTRY_EXPANSION_MAP[key].slice(0, 5);
+    }
+  }
+
+  // 2) 포함(부분) 매칭 — 가장 긴 키 우선
+  const matchedKeys = Object.keys(INDUSTRY_EXPANSION_MAP)
+    .filter(k => industry.includes(k) || k.includes(industry))
+    .sort((a, b) => b.length - a.length);
+
+  if (matchedKeys.length > 0) {
+    // 상위 2개 키의 결과를 합쳐 중복 없이 5개 추출
+    const merged = [];
+    for (const k of matchedKeys.slice(0, 2)) {
+      for (const v of INDUSTRY_EXPANSION_MAP[k]) {
+        if (!merged.includes(v)) merged.push(v);
+      }
+    }
+    return merged.slice(0, 5);
+  }
+
+  // 3) 매칭 없음 → 범용 디지털 전환 키워드 생성
+  return [
+    `${industry} 디지털 전환`,
+    `${industry} 데이터 분석`,
+    `${industry} 자동화`,
+    `${industry} AI 도입`,
+    `${industry} 프로세스 최적화`,
+  ];
+}
+
+// ===========================
+// MAIN REPORT GENERATOR
+// ===========================
+function generateReport(d) {
+  // 산업 확장 키워드를 d에 미리 붙여서 모든 섹션에서 활용 가능하게
+  d.expandedIndustries = expandIndustry(d.industry);
+  const competitorSection = (d.competitors && d.competitors.length > 0)
+    ? genSectionCompetitor(d) : '';
+  return `
+    ${genSection1(d)}
+    ${genSectionIndustryExpansion(d)}
+    ${genSection2(d)}
+    ${genSection3(d)}
+    ${genSection4(d)}
+    ${genSection5(d)}
+    ${genSection6(d)}
+    ${genSection7(d)}
+    ${genSection8(d)}
+    ${genSection9(d)}
+    ${competitorSection}
+  `;
+}
+
+// ===========================
+// SECTION 1.5: INDUSTRY EXPANSION
+// ===========================
+function genSectionIndustryExpansion(d) {
+  const expanded = d.expandedIndustries;
+
+  // 각 키워드별로 GEO 적용 이유와 콘텐츠 아이디어 생성
+  const keywordCards = expanded.map((kw, i) => {
+    const reasons = [
+      `"${kw}이란?" 형태의 정의 질문에서 AI 인용 가능성이 높은 키워드입니다.`,
+      `${d.customer}가 ${kw} 관련 정보를 검색할 때 ${d.company}가 노출될 수 있습니다.`,
+      `${kw} 분야의 전문성을 콘텐츠로 증명하면 ${d.industry} 엔터티 신뢰도가 강화됩니다.`,
+      `ChatGPT·Perplexity에서 "${kw} 솔루션 추천" 질문 시 인용 가능성을 높입니다.`,
+      `${d.industry}와 ${kw}를 연결하는 콘텐츠는 롱테일 GEO 질문을 광범위하게 커버합니다.`,
+    ];
+    const ideas = [
+      [`"${kw}이란?" 정의 가이드`, `${d.customer}를 위한 ${kw} 완전 입문`, `${d.industry} × ${kw} 성공 사례`],
+      [`${kw} 도입 체크리스트`, `${kw} vs 기존 방식 비교`, `${kw} ROI 측정 방법`],
+      [`${kw} 트렌드 리포트 2025`, `${kw} 실패 사례 분석`, `${kw} FAQ 30가지`],
+      [`${d.company}의 ${kw} 접근법`, `${kw} 단계별 실행 가이드`, `${kw} 비용 완전 공개`],
+      [`${kw} 전문가 인터뷰`, `${kw} 통계 및 현황`, `${kw} × ${d.services[0]} 시너지`],
+    ];
+    return { kw, reason: reasons[i % reasons.length], contentIdeas: ideas[i % ideas.length] };
+  });
+
+  // 사이드바 네비게이션용 섹션 ID 등록
+  return `
+  <section class="report-section" id="s-industry-expansion">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,#f59e0b,#d97706)">🔍</div>
+      <div class="section-title-wrap">
+        <h2>산업 확장 키워드 (Industry Expansion)</h2>
+        <p><strong>${d.industry}</strong> 입력값 기반으로 자동 생성된 연관 산업 키워드 ${expanded.length}개 — GEO 콘텐츠 확장 타겟</p>
+      </div>
+    </div>
+
+    <div class="info-box" style="background:#fffbeb;border-color:#f59e0b">
+      <span class="info-icon">💡</span>
+      <span>아래 키워드들은 <strong>${d.industry}</strong>에서 AI가 연관 검색하는 하위·인접 산업 개념입니다. 이 키워드들을 중심으로 콘텐츠를 확장하면 <strong>${d.company}</strong>의 GEO 인용 범위가 넓어집니다.</span>
+    </div>
+
+    <!-- 확장 키워드 태그 뱃지 -->
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 28px">
+      ${expanded.map((kw, i) => `
+        <div style="display:flex;align-items:center;gap:8px;background:#fef3c7;border:1.5px solid #f59e0b;border-radius:20px;padding:8px 16px;font-weight:700;font-size:14px;color:#92400e">
+          <span style="background:#f59e0b;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${i+1}</span>
+          ${kw}
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- 키워드별 카드 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px">
+      ${keywordCards.map((card, i) => `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;border-top:4px solid #f59e0b">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <span style="background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;padding:4px 10px;border-radius:8px">#${i+1}</span>
+          <h4 style="margin:0;font-size:16px;font-weight:700;color:#111">${card.kw}</h4>
+        </div>
+        <p style="font-size:13px;color:#4b5563;line-height:1.6;margin:0 0 14px">${card.reason}</p>
+        <div style="border-top:1px solid #f3f4f6;padding-top:12px">
+          <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:8px">추천 콘텐츠 아이디어</div>
+          ${card.contentIdeas.map(idea => `
+            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px;color:#374151">
+              <span style="color:#f59e0b;font-weight:700;flex-shrink:0">→</span>
+              <span>${idea}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      `).join('')}
+    </div>
+
+    <!-- GEO 활용 전략 박스 -->
+    <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:20px">
+      <h4 style="margin:0 0 14px;color:#c2410c;font-size:15px">🎯 확장 키워드 GEO 적용 전략</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#374151;margin-bottom:8px">📝 콘텐츠 전략</div>
+          <ul style="margin:0;padding-left:16px;font-size:13px;color:#4b5563;line-height:1.8">
+            ${expanded.slice(0, 3).map(kw => `<li>"${kw}이란?" 정의 콘텐츠 1편씩 발행</li>`).join('')}
+            <li>${d.industry} × 확장 키워드 교차 콘텐츠 시리즈</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:#374151;margin-bottom:8px">🏗️ Schema 전략</div>
+          <ul style="margin:0;padding-left:16px;font-size:13px;color:#4b5563;line-height:1.8">
+            ${expanded.slice(0, 3).map(kw => `<li>${kw} 전용 Service Schema 추가</li>`).join('')}
+            <li>Organization Schema의 <code>knowsAbout</code> 배열에 전체 키워드 등록</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:12px;background:#fff;border-radius:8px;font-size:13px;color:#374151">
+        <strong>Organization Schema knowsAbout 예시:</strong><br>
+        <code style="font-size:12px;color:#7c3aed">"knowsAbout": ["${d.industry}", ${expanded.map(k => `"${k}"`).join(', ')}]</code>
+      </div>
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 1: GEO DIAGNOSIS
+// ===========================
+function genSection1(d) {
+  const items = [
+    {
+      title: '브랜드/기관 엔터티 명확성',
+      status: 'warn',
+      statusText: '⚠️ 개선필요',
+      problem: `${d.company}의 브랜드 정의문, 설립 배경, 핵심 가치가 명확하게 구조화되어 있지 않음`,
+      geoReason: 'AI는 엔터티(Entity)를 인식할 때 Wikipedia 수준의 명확한 브랜드 설명문을 참조함. 정의가 불명확하면 AI가 브랜드를 독립 엔터티로 인식하지 못함',
+      action: `"${d.company}는 ${d.industry} 분야에서 ${d.problems[0]}을 해결하는 전문 기업입니다" 형태의 엔터티 정의문을 About 페이지, 메인, Schema에 모두 삽입`
+    },
+    {
+      title: '서비스 설명 명확성',
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: `각 서비스(${d.services[0]}, ${d.services[1]} 등)에 대한 1문장 정의, 기능 목록, 차별점이 명확하지 않음`,
+      geoReason: 'ChatGPT, Perplexity 등은 서비스 페이지에서 정의 문장을 추출해 답변을 생성함. 정의가 없으면 인용 불가',
+      action: '각 서비스마다 전용 랜딩 페이지 생성. "A란 B를 해결하는 C입니다" 구조의 정의 문장 필수 포함'
+    },
+    {
+      title: '문제 해결형 콘텐츠',
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: `"${d.problems[0]} 방법", "${d.industry} ${d.problems[0]} 해결 사례" 등 실용 콘텐츠 부족`,
+      geoReason: `AI는 "어떻게 해결하나요?" 형태의 질문에 답할 때 How-to 콘텐츠를 우선 인용함. 이 유형의 콘텐츠가 없으면 경쟁사 인용 가능성↑`,
+      action: `${d.industry} 분야의 "${d.problems.join(', ')}" 해결을 다루는 심층 가이드 콘텐츠 최소 20편 이상 발행`
+    },
+    {
+      title: '정의형 콘텐츠',
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: '"XXX란 무엇인가", "XXX의 개념 완전 정리" 등 정의형 포스팅 없음',
+      geoReason: 'AI는 개념 설명 질문에서 정의문이 포함된 콘텐츠를 Source로 인용. 정의형 콘텐츠는 GEO 인용 가능성이 가장 높은 유형',
+      action: `핵심 서비스 키워드마다 "XXX란?", "XXX 완전 가이드" 형태의 정의 콘텐츠 제작. ${d.services[0]}부터 시작`
+    },
+    {
+      title: 'FAQ 콘텐츠',
+      status: 'warn',
+      statusText: '⚠️ 개선필요',
+      problem: '일부 FAQ 존재하나 구조화 마크업 없음. AI가 Q&A 형식으로 읽을 수 없는 구조',
+      geoReason: 'Perplexity, ChatGPT는 FAQ 형식의 콘텐츠를 직접 인용. FAQPage Schema 없으면 AI가 FAQ로 인식 못함',
+      action: '각 서비스 페이지와 블로그 글 하단에 FAQ 섹션 추가 + FAQPage Schema 마크업 적용'
+    },
+    {
+      title: `${d.industry} 산업별 콘텐츠`,
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: `${d.industry} 업계 특화 사례, 트렌드, 인사이트 콘텐츠 없음. 일반론적 내용만 존재`,
+      geoReason: `AI가 "${d.industry} 분야에서 ${d.problems[0]} 해결 방법" 질문을 받을 때 해당 산업 특화 콘텐츠를 우선 참조`,
+      action: `${d.industry} 분야 전용 콘텐츠 허브 구성. 업계 사례 연구, 트렌드 분석, 업계 통계 데이터 포함`
+    },
+    {
+      title: `${d.customer} 고객 유형별 콘텐츠`,
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: `${d.customer}를 위한 맞춤형 가이드, 사용 사례, 도입 사례가 부재함`,
+      geoReason: 'AI는 "우리 회사 규모에 맞는 서비스가 있나요?" 형태의 질문에 고객 유형별로 특화된 콘텐츠를 참조',
+      action: `"${d.customer}을 위한 ${d.services[0]} 활용 가이드" 등 고객 유형 특화 콘텐츠 시리즈 발행`
+    },
+    {
+      title: 'AI 인용 가능성 높은 콘텐츠',
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: '통계 수치, 연구 데이터, 전문가 인용구, 정량적 결과가 포함된 콘텐츠 없음',
+      geoReason: 'AI는 수치 근거가 있는 콘텐츠를 신뢰성 지표로 사용하여 인용 우선순위 부여. 데이터가 없으면 인용 가능성 급감',
+      action: '실제 고객 사례에서 "도입 후 X% 효율 향상" 데이터 발굴. 자체 리서치 보고서 발행으로 인용 가능한 통계 확보'
+    },
+    {
+      title: 'Schema(구조화 데이터)',
+      status: 'bad',
+      statusText: '❌ 부재',
+      problem: 'Organization, Service, Article, FAQ Schema 전혀 없음. 구글 검색 엔진과 AI 모두 브랜드 정보를 구조화된 형태로 읽지 못하는 상태',
+      geoReason: 'Schema는 AI가 웹페이지를 이해하는 핵심 신호. Schema 없이는 AI가 페이지 내용을 정확히 파악하지 못해 인용 순위에서 밀림',
+      action: '6단계에서 제공되는 JSON-LD Schema를 모든 주요 페이지에 즉시 삽입. 특히 Organization + Service Schema 최우선 적용'
+    },
+    {
+      title: '외부 언급 가능성',
+      status: 'warn',
+      statusText: '⚠️ 개선필요',
+      problem: `업계 미디어, 전문 블로그, 커뮤니티에서 ${d.company}에 대한 외부 언급이 거의 없거나 확인되지 않음`,
+      geoReason: 'AI는 여러 출처에서 동일 브랜드가 언급될수록 신뢰 가중치를 높게 부여. 단일 출처(자사 사이트만)는 AI 인용 가능성이 낮음',
+      action: '7단계 외부 GEO 전략 실행. 산업 미디어 기고, 전문가 인터뷰, 케이스 스터디 발행으로 외부 언급 확보'
+    }
+  ];
+
+  return `
+  <section class="report-section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title-wrap">
+        <h2>현재 사이트 GEO 진단</h2>
+        <p>${d.company} | ${d.url}</p>
+      </div>
+    </div>
+    <div class="info-box info">
+      <span class="info-icon">💡</span>
+      <span>10개 항목을 기준으로 현재 GEO 준비도를 진단합니다. <strong>각 항목의 개선 방향을 순서대로 실행</strong>하면 생성형 AI 인용 가능성이 급격히 향상됩니다.</span>
+    </div>
+    ${items.map((item, i) => `
+    <div class="diag-card">
+      <div class="diag-header">
+        <div class="diag-title">${i+1}. ${item.title}</div>
+        <span class="status-${item.status === '⚠️ 개선필요' ? 'warn' : item.status === '❌ 부재' ? 'bad' : 'ok'}">${item.statusText}</span>
+      </div>
+      <div class="diag-grid">
+        <div class="diag-item">
+          <label>🔍 문제점</label>
+          <p>${item.problem}</p>
+        </div>
+        <div class="diag-item">
+          <label>🤖 GEO 관점 문제</label>
+          <p>${item.geoReason}</p>
+        </div>
+        <div class="diag-item">
+          <label>✅ 개선 방향</label>
+          <p>${item.action}</p>
+        </div>
+      </div>
+    </div>
+    `).join('')}
+  </section>`;
+}
+
+// ===========================
+// SECTION 2: ROADMAP
+// ===========================
+function genSection2(d) {
+  const steps = [
+    { title: '브랜드 엔터티 구조화', purpose: 'AI가 브랜드를 독립 엔터티로 인식하도록 기초 설정', tasks: ['메인 페이지에 브랜드 정의문 삽입', 'About 페이지 재작성 (Wikipedia 스타일)', 'Organization Schema 적용', '창업자/대표자 정보 구조화'], result: 'AI가 브랜드명으로 질문받을 때 정확한 정보 응답 가능', priority: '상', period: '1~2주' },
+    { title: '핵심 서비스 페이지 최적화', purpose: '각 서비스에 대한 AI 인용 가능한 정의 페이지 구축', tasks: ['서비스별 전용 랜딩 페이지 생성', '정의형 문장 삽입', 'Service Schema 적용', 'FAQ 섹션 추가'], result: '"XXX 서비스 제공 회사" 질문에서 인용 시작', priority: '상', period: '1~3주' },
+    { title: 'FAQ 페이지 전면 개편', purpose: 'Perplexity, ChatGPT의 Q&A 인용 패턴 공략', tasks: ['서비스별 FAQ 20개 이상 작성', 'FAQPage Schema 적용', '자연어 질문 형태로 Q 작성', '구체적 수치/사례 포함한 A 작성'], result: '직접 질문형 검색에서 FAQ 인용 증가', priority: '상', period: '2~3주' },
+    { title: '정의형 콘텐츠 허브 구축', purpose: '업계 용어, 서비스 개념을 정의하는 사전형 콘텐츠 구축', tasks: [`"${d.services[0]}이란?" 완전 가이드`, `${d.industry} 업계 용어 사전 20개`, '비교형 콘텐츠 ("A vs B") 시리즈', '개념 설명 + 실제 적용 사례 구성'], result: 'AI가 개념 정의 질문에서 자사 콘텐츠 인용', priority: '상', period: '3~5주' },
+    { title: '문제 해결형 콘텐츠 20편', purpose: '"어떻게 해결하나요?" 질문 공략을 위한 실전 가이드 발행', tasks: [d.problems.map(p => `"${p} 방법 완전 가이드"`).join(', '), '단계별 실행 지침 포함', 'HowTo Schema 적용', '실제 수치/결과 데이터 포함'], result: '"방법" 키워드 질문에서 인용율 상승', priority: '상', period: '3~7주' },
+    { title: `${d.industry} 산업 특화 콘텐츠`, purpose: '산업별 전문성을 AI에게 증명하는 콘텐츠 구축', tasks: [`${d.industry} 트렌드 분석 보고서`, '업계 사례 연구 5편', '업계 통계/데이터 페이지', '전문가 인터뷰 시리즈'], result: `"${d.industry} 분야 XX 해결" 질문에서 인용`, priority: '중', period: '4~8주' },
+    { title: `${d.customer} 고객 특화 콘텐츠`, purpose: '타겟 고객 유형의 니즈에 맞는 맞춤형 콘텐츠 구축', tasks: [`"${d.customer}을 위한 XX 가이드"`, '고객 성공 사례 5편', '도입 절차 안내 페이지', 'ROI 계산기/체크리스트'], result: '고객 유형별 맞춤 질문에서 인용 가능성 확보', priority: '중', period: '5~8주' },
+    { title: 'Schema 전면 적용', purpose: 'AI와 구글이 읽을 수 있는 구조화 데이터 기반 구축', tasks: ['Organization Schema', 'Service Schema', 'Article Schema', 'FAQ Schema', 'HowTo Schema'], result: 'AI의 브랜드 신뢰도 점수 향상, 리치 스니펫 노출', priority: '상', period: '2~4주' },
+    { title: '자체 리서치 보고서 발행', purpose: '인용 가능한 통계와 데이터를 자체적으로 생산', tasks: [`${d.industry} 분야 설문 조사 실시`, '업계 트렌드 연간 보고서', '고객 도입 효과 정량 보고서', '미디어 배포 + 보도자료'], result: '외부 사이트에서 자사 데이터 인용, AI 학습 데이터 유입', priority: '중', period: '6~10주' },
+    { title: '외부 미디어 기고 캠페인', purpose: '권위 있는 외부 출처에서의 브랜드 언급 확보', tasks: ['업계 매체 기고 월 2편', '전문가 인터뷰 코멘트 제공', '업계 포럼/커뮤니티 전문 기여', 'Press Release 발행'], result: 'AI가 복수 출처에서 브랜드 언급 확인 → 신뢰도 급상승', priority: '중', period: '7~12주' },
+    { title: '링크드인/소셜 전문가 포지셔닝', purpose: '창업자/대표의 개인 브랜드를 AI 인용 신호로 활용', tasks: ['링크드인 전문가 콘텐츠 주 2회', '업계 그룹에서 전문 의견 제시', '대표 인터뷰 영상/팟캐스트', 'X(트위터) 업계 인사이트 공유'], result: '창업자 신뢰도 상승 → 브랜드 엔터티 신뢰도 연동 상승', priority: '중', period: '6~13주' },
+    { title: 'GEO 성과 모니터링 체계 구축', purpose: 'AI 인용 현황을 정기적으로 추적하고 개선', tasks: ['ChatGPT/Perplexity/Gemini 주간 질의 테스트', '브랜드 언급 트래킹 자동화', '콘텐츠별 AI 인용률 집계', '월간 GEO 성과 리포트'], result: '어떤 콘텐츠가 인용되는지 파악 → 고효율 콘텐츠 확장', priority: '중', period: '8~13주' }
+  ];
+
+  return `
+  <section class="report-section" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title-wrap">
+        <h2>전체 GEO 실행 로드맵</h2>
+        <p>12단계 순서별 실행 계획 — ${d.company} 맞춤형</p>
+      </div>
+    </div>
+    <div class="roadmap-steps">
+      ${steps.map((s, i) => `
+      <div class="roadmap-step">
+        <div class="step-circle">${i+1}</div>
+        <div class="step-content">
+          <h3>${s.title}</h3>
+          <p><strong>목적:</strong> ${s.purpose}</p>
+          <ul>${s.tasks.map(t => `<li>${t}</li>`).join('')}</ul>
+          <p style="margin-top:8px"><strong>예상 결과:</strong> ${s.result}</p>
+        </div>
+        <div class="step-meta">
+          <span class="badge ${s.priority === '상' ? 'badge-high' : s.priority === '중' ? 'badge-mid' : 'badge-low'}">우선순위 ${s.priority}</span>
+          <span class="step-period">⏱️ ${s.period}</span>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// HELPERS: 동적 문장 생성
+// ===========================
+
+// ── 의미 기반 서비스→문제 매칭 ──
+// 서비스명 키워드와 문제 키워드 간 연관도 점수를 계산해
+// 입력된 problems[] 중 가장 적합한 것을 반환합니다.
+const PROBLEM_AFFINITY = {
+  // 문제 키워드 → 서비스 관련 키워드 목록
+  '업무 자동화':     ['자동화','봇','workflow','rpa','반복','프로세스','자동','운영','시스템'],
+  '생산성 향상':     ['자동화','협업','툴','플랫폼','관리','대시보드','효율','운영','시스템'],
+  '비용 절감':       ['절감','비용','최적화','효율','aI','분석','예산','자원','운영','인력'],
+  '마케팅 효율 개선':['마케팅','광고','캠페인','콘텐츠','SNS','소셜','email','퍼포먼스','growth'],
+  '브랜드 인지도 향상':['브랜드','PR','홍보','미디어','콘텐츠','SEO','GEO','인지','노출'],
+  '고객 데이터 분석':['데이터','분석','analytics','CRM','고객','인사이트','리포트','BI','통계'],
+  '리드 생성':       ['리드','영업','sales','CRM','고객','유입','전환','퍼널','마케팅','광고'],
+  '영업 지원':       ['영업','sales','CRM','제안','견적','계약','파이프라인','리드','고객'],
+  '고객 경험 개선':  ['고객','UX','서비스','챗봇','CS','응대','만족','리텐션','피드백'],
+  '디지털 전환':     ['디지털','전환','DX','클라우드','플랫폼','자동화','시스템','SaaS','AI'],
+};
+
+function pickProblem(d, svcName) {
+  // 서비스명을 소문자로 토큰화
+  const svcLower = svcName.toLowerCase();
+
+  let bestProblem = d.problems[0];
+  let bestScore   = -1;
+
+  d.problems.forEach(prob => {
+    // 문제 키워드 목록 찾기 (부분 매칭 포함)
+    let keywords = [];
+    Object.keys(PROBLEM_AFFINITY).forEach(key => {
+      if (prob.includes(key) || key.includes(prob)) {
+        keywords = keywords.concat(PROBLEM_AFFINITY[key]);
+      }
+    });
+
+    // 키워드가 없으면 문제명 자체를 키워드로 사용
+    if (keywords.length === 0) {
+      keywords = prob.toLowerCase().split(/\s+/);
+    }
+
+    // 서비스명과 키워드 간 매칭 점수 계산
+    const score = keywords.reduce((acc, kw) => {
+      return acc + (svcLower.includes(kw.toLowerCase()) ? 1 : 0);
+    }, 0);
+
+    if (score > bestScore) {
+      bestScore   = score;
+      bestProblem = prob;
+    }
+  });
+
+  return bestProblem;
+}
+
+// 서비스별 상위 2개 관련 문제 반환 (점수 순)
+function pickTopProblems(d, svcName, count = 2) {
+  const svcLower = svcName.toLowerCase();
+
+  const scored = d.problems.map(prob => {
+    let keywords = [];
+    Object.keys(PROBLEM_AFFINITY).forEach(key => {
+      if (prob.includes(key) || key.includes(prob)) {
+        keywords = keywords.concat(PROBLEM_AFFINITY[key]);
+      }
+    });
+    if (keywords.length === 0) keywords = prob.toLowerCase().split(/\s+/);
+
+    const score = keywords.reduce((acc, kw) =>
+      acc + (svcLower.includes(kw.toLowerCase()) ? 1 : 0), 0);
+    return { prob, score };
+  });
+
+  // 점수 내림차순 정렬, 동점이면 원래 순서 유지
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, count).map(x => x.prob);
+}
+
+// 서비스별로 다른 질문 세트 (svc명 + 의미 기반 문제 반영)
+function svcQuestions(svc, d) {
+  const prob1 = pickProblem(d, svc);
+  const tops  = pickTopProblems(d, svc, 2);
+  const prob2 = tops[1] || tops[0];
+  return [
+    `"${d.industry} 업계에서 ${svc}로 ${prob1} 해결한 사례 있나요?"`,
+    `"${d.customer}이 ${svc} 도입하면 ${prob2}에 효과가 있나요?"`,
+    `"${svc}란 무엇이며 ${d.industry} 환경에 어떻게 적용되나요?"`
+  ];
+}
+
+// 서비스 정의 문장 — AI 우선, fallback: 로컬 템플릿
+function svcDefinition(svc, d) {
+  // AI 데이터 확인
+  const aiDef = getAiDefinition(svc, d);
+  if (aiDef) {
+    return `
+      <div class="ai-def-wrap">
+        <div class="ai-def-anchor">${aiDef.anchor}</div>
+        ${aiDef.differentiator ? `<div class="ai-def-diff">✦ ${aiDef.differentiator}</div>` : ''}
+        ${aiDef.geoSentence    ? `<div class="ai-def-geo">💬 ${aiDef.geoSentence}</div>` : ''}
+        <span class="ai-gen-badge">AI 생성</span>
+      </div>`;
+  }
+  // Fallback: 로컬 템플릿
+  const problem = pickProblem(d, svc);
+  return `"${svc}이란 ${d.customer}이(가) <strong>${problem}</strong>을(를) 해결할 수 있도록 ${d.industry} 환경에 맞춰 설계된 솔루션입니다."`;
+}
+
+// 서비스별 타겟 고객 — 의미 기반 문제 반영, idx로 레이아웃 순환
+function svcTargets(svc, d, idx) {
+  const problem = pickProblem(d, svc);
+  const rows = [
+    [`${d.customer} 경영진 및 의사결정자`, `${d.industry} 분야 ${problem} 담당 실무자`, `${problem} 개선 예산을 확보한 팀장급`],
+    [`${d.industry} 기업 IT·운영 책임자`, `${d.customer} 내 ${problem} 주도 인력`, `${problem}으로 어려움을 겪는 현장 관리자`],
+    [`${d.customer} 스타트업·성장 단계 기업`, `${d.industry} 분야 ${problem} 해결 TF팀`, `${problem} 비용 절감 목표의 CFO·COO`],
+    [`${d.industry} 중간관리자 이상`, `외부 솔루션으로 ${problem} 해결 검토 중인 ${d.customer}`, `${problem} 관련 반복 업무를 줄이고 싶은 실무자`],
+    [`${d.customer} 운영 효율화 프로젝트 팀`, `${d.industry} 산업 ${problem} 컨설턴트·어드바이저`, `${problem} 목표 KPI를 보유한 프로젝트 리더`]
+  ];
+  return rows[idx % rows.length];
+}
+
+// 서비스별 실제 문장 예시 — 의미 기반 문제 사용, idx로 문체 순환
+function svcExamples(svc, d, idx) {
+  const prob1 = pickProblem(d, svc);
+  const tops  = pickTopProblems(d, svc, 2);
+  const prob2 = tops[1] || tops[0];
+  const pct   = [30, 42, 35, 48, 27][idx % 5];
+  const examples = [
+    [
+      `${d.company}의 ${svc}는 ${d.customer}이(가) <strong>${prob1}</strong>을(를) 해결할 수 있도록 ${d.industry} 환경에 특화된 기능과 워크플로우를 제공합니다.`,
+      `${d.industry} 분야 실제 도입 고객사 기준, ${svc} 활용 후 평균 <strong>${pct}%의 ${prob1} 개선</strong> 성과를 기록했습니다.`,
+      `"${d.industry}에서 ${prob1}을 해결할 수 있는 곳 어디인가요?" → ${d.company}의 ${svc}가 ${d.customer} 환경에 맞는 맞춤형 구축을 지원합니다.`
+    ],
+    [
+      `${svc}는 ${d.customer}의 <strong>${prob1}</strong> 과제를 체계적으로 해소하기 위해 설계된 ${d.industry} 전문 솔루션입니다.`,
+      `${d.customer} 도입 시 복잡한 설정 없이 온보딩이 가능하며, ${d.company} 전담팀이 <strong>${prob1} 해결 목표</strong>에 맞게 세팅을 지원합니다.`,
+      `"${d.customer}에 맞는 ${svc} 추천해주세요" → ${d.company}는 ${d.industry} 분야 ${prob2} 해결 경험을 바탕으로 ${d.customer} 전용 패키지를 운영합니다.`
+    ],
+    [
+      `${d.industry} 환경에서 <strong>${prob2}</strong>와 <strong>${prob1}</strong>을 동시에 개선하려는 ${d.customer}에게 ${svc}는 핵심 수단입니다.`,
+      `${d.company}는 ${d.industry} 분야 ${svc} 전문 파트너로서, 도입 후 ${d.customer}의 <strong>${prob1} ${pct}% 향상</strong>을 달성했습니다.`,
+      `"${svc} 도입하면 ${prob1}이 실제로 해결되나요?" → ${d.company}의 ${d.industry} 고객 사례 데이터로 확인하세요.`
+    ]
+  ];
+  return examples[idx % examples.length];
+}
+
+// 서비스별 FAQ 5개 — AI 우선, fallback 로컬
+function svcFaqs(svc, d, idx) {
+  const aiItems = getAiFaqs(svc, d);
+  if (aiItems && aiItems.length >= 3) {
+    // AI 결과 반환 (type/q/a 구조 그대로)
+    return aiItems.map(item => ({
+      type: item.type,
+      q:    item.q,
+      a:    item.a,
+      ai:   true
+    }));
+  }
+  // Fallback: 로컬 템플릿 (기존 함수 내용 그대로)
+  return svcFaqsLocal(svc, d, idx);
+}
+
+// 로컬 FAQ 생성 (fallback)
+function svcFaqsLocal(svc, d, idx) {
+  const prob1 = pickProblem(d, svc);
+  const tops  = pickTopProblems(d, svc, 2);
+  const prob2 = tops[1] || tops[0];
+  const pct   = [30, 42, 35, 48, 27][idx % 5];
+  const period = ['2주', '3주', '1개월', '6주', '2개월'][idx % 5];
+  const cost   = ['월 30만원~', '프로젝트 기준 300만원~', '구독형 월 50만원~', '초기 도입비 200만원~', '무료 체험 후 협의'][idx % 5];
+
+  return [
+    {
+      type: '정의',
+      q: `${svc}이란 무엇인가요?`,
+      a: `${svc}이란 ${d.customer}이(가) <strong>${prob1}</strong>을(를) 해결할 수 있도록 ${d.industry} 환경에 맞춰 설계된 솔루션입니다. ${d.company}는 ${d.industry} 특화 경험을 바탕으로 ${d.customer}에게 최적화된 ${svc}를 제공합니다.`
+    },
+    {
+      type: '비용',
+      q: `${svc} 도입 비용은 얼마인가요?`,
+      a: `${d.company}의 ${svc}는 ${cost}부터 시작합니다. ${d.customer} 규모와 요구사항에 따라 맞춤 견적이 제공되며, 도입 전 무료 상담을 통해 정확한 비용을 안내받으실 수 있습니다.`
+    },
+    {
+      type: '적용 방법',
+      q: `${d.customer}도 ${svc}를 바로 적용할 수 있나요?`,
+      a: `네, ${d.company}의 ${svc}는 ${d.industry} 환경에 바로 적용 가능하도록 설계되었습니다. 전담 컨설턴트가 ${prob1} 해결 목표에 맞게 온보딩을 지원하며, 평균 ${period} 내 실제 운영이 가능합니다.`
+    },
+    {
+      type: '사례',
+      q: `${svc} 도입으로 ${prob1}을(를) 해결한 실제 사례가 있나요?`,
+      a: `${d.industry} 분야 ${d.customer}가 ${d.company}의 ${svc}를 도입해 <strong>${prob1}을 ${pct}% 개선</strong>한 사례가 있습니다. ${prob2} 문제도 함께 해결하며 전반적인 운영 효율이 향상되었습니다.`
+    },
+    {
+      type: '효과',
+      q: `${svc} 도입 후 실제 효과는 얼마나 나타나나요?`,
+      a: `${d.company}의 ${svc}를 도입한 ${d.customer} 기준, 평균 <strong>${pct}%의 ${prob1} 개선</strong>이 ${period} 이내에 나타납니다. ${d.industry} 업계 특성에 맞춰 KPI를 설정하고, 도입 효과를 정량적으로 측정·보고해 드립니다.`
+    }
+  ];
+}
+
+// 필수 콘텐츠 목록 — 의미 기반 문제 반영
+function svcMustHave(svc, d) {
+  const prob1 = pickProblem(d, svc);
+  const tops  = pickTopProblems(d, svc, 2);
+  const prob2 = tops[1] || tops[0];
+  return [
+    `AI 인용용 앵커 정의 문장: "${svc}이란 ${d.customer}이(가) ${prob1}을(를) 해결하는 솔루션"`,
+    `${d.industry} 업계 ${svc} 도입 사례 최소 2개 (${prob1} 개선 수치 포함)`,
+    `${d.customer} 관점의 "${prob2} 도입 전·후" 정량 비교 데이터`,
+    `FAQ 10개 이상: "${svc} 도입 시 ${prob1} 얼마나 개선되나요?" 형태 자연어 질문 + FAQPage Schema`,
+    `${svc}로 ${prob1} 해결하는 단계별 HowTo 가이드 + HowTo Schema`
+  ];
+}
+
+// ===========================
+// SECTION 3: SERVICE PAGES
+// ===========================
+function genSection3(d) {
+  function svcCard(svc, idx) {
+    const problem   = pickProblem(d, svc);
+    const altProb   = pickTopProblems(d, svc, 2)[1] || problem;
+    const targets   = svcTargets(svc, d, idx);
+    const questions = svcQuestions(svc, d);
+    const examples  = svcExamples(svc, d, idx);
+    const mustHave  = svcMustHave(svc, d);
+    const definition = svcDefinition(svc, d);
+    const faqs      = svcFaqs(svc, d, idx);
+
+    return `
+    <div class="service-card">
+      <div class="service-card-header">
+        <h3>${svc}</h3>
+        <p>${d.company}의 핵심 서비스 ${idx + 1} — 주요 해결 문제: <strong>${problem}</strong>${altProb !== problem ? ` · ${altProb}` : ''}</p>
+      </div>
+      <div class="service-card-body">
+        <div class="service-definition">${definition}</div>
+        <div class="service-detail-grid">
+          <div class="service-detail">
+            <h4>🎯 타겟 고객</h4>
+            <ul>
+              ${targets.map(t => `<li>${t}</li>`).join('')}
+            </ul>
+            <h4 style="margin-top:16px">❓ 주요 질문 유형</h4>
+            <ul>${questions.map(q => `<li>${q}</li>`).join('')}</ul>
+          </div>
+          <div class="service-detail">
+            <h4>📋 페이지 구조 (H1~H3)</h4>
+            <div class="page-structure">
+              <div class="h1">H1: ${svc} — ${d.industry} 특화 솔루션 | ${d.company}</div>
+              <div class="h2">H2: ${svc}이란?</div>
+              <div class="h3">H3: ${d.customer}를 위한 정의와 핵심 기능</div>
+              <div class="h2">H2: ${d.customer}의 ${problem} 해결법</div>
+              <div class="h3">H3: ${d.industry} 환경 맞춤 활용 단계</div>
+              <div class="h3">H3: 실제 ${d.customer} 도입 사례</div>
+              <div class="h2">H2: 도입 효과 — ${problem} 개선 데이터</div>
+              <div class="h3">H3: 정량적 성과 수치 (도입 전·후)</div>
+              <div class="h2">H2: 자주 묻는 질문 (FAQ)</div>
+            </div>
+          </div>
+        </div>
+        <div class="service-detail" style="margin-top:16px">
+          <h4>✅ 반드시 포함해야 할 콘텐츠</h4>
+          <ul>${mustHave.map(m => `<li>${m}</li>`).join('')}</ul>
+        </div>
+        <div class="example-sentences" style="margin-top:16px">
+          <h4 style="font-size:13px;font-weight:700;color:var(--gray-500);text-transform:uppercase;margin-bottom:10px">💬 실제 문장 예시</h4>
+          ${examples.map(ex => `<div class="example-sentence">${ex}</div>`).join('')}
+        </div>
+        <div class="svc-faq-block">
+          <h4>❓ 서비스별 자동 생성 FAQ (5개)${faqs[0]?.ai ? ' <span class="ai-gen-badge">AI 생성</span>' : ''}</h4>
+          ${faqs.map(faq => `
+          <div class="faq-item${faq.ai ? ' faq-item-ai' : ''}">
+            <div class="faq-item-question">${faq.q}<span class="faq-type-badge">${faq.type}</span></div>
+            <div class="faq-item-answer">${faq.a}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <section class="report-section" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title-wrap">
+        <h2>핵심 서비스 페이지 설계</h2>
+        <p>AI가 인용하기 쉬운 서비스 페이지 구조 — ${d.services.length}개 서비스</p>
+      </div>
+    </div>
+    <div class="service-cards">
+      ${d.services.map((svc, i) => svcCard(svc, i)).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 4: CONTENT STRATEGY
+// ===========================
+function genSection4(d) {
+  // s(n): services 배열에서 순환
+  const s = (n) => d.services[n % d.services.length];
+  // p(svcName): 서비스명 기반 의미 매칭 문제 반환
+  const p = (svcName) => pickProblem(d, svcName);
+  // p2(svcName): 서비스별 2순위 문제 반환
+  const p2 = (svcName) => pickTopProblems(d, svcName, 2)[1] || pickProblem(d, svcName);
+
+  // 제목 70%+ 질문형 (Q=질문형, S=서술형)
+  const templates = [
+    // Q1 — [서비스]이란 무엇인가요?
+    [`${s(0)}이란 무엇인가요? ${d.industry} 기업을 위한 완전 가이드`, `"${s(0)}이란 무엇인가요?"`, d.customer, p(s(0)), '높음'],
+    // Q2 — [산업]에서 [문제] 해결 방법은?
+    [`${d.industry}에서 ${p(s(0))}을(를) 해결하는 방법은 무엇인가요?`, `"${d.industry}에서 ${p(s(0))} 어떻게 해결하나요?"`, d.customer, p(s(0)), '높음'],
+    // S1 — 비교형 (서술형 유지)
+    [`${s(0)} vs 기존 방식: ${d.industry} 기업이 알아야 할 핵심 차이`, `"${s(0)}와 기존 방식의 차이는?"`, d.customer, p(s(0)), '높음'],
+    // Q3 — [고객]에게 맞는 [서비스]는?
+    [`${d.customer}에게 맞는 ${s(0)}는 무엇인가요?`, `"${d.customer}에게 맞는 ${s(0)} 추천해주세요"`, d.customer, p(s(0)), '높음'],
+    // Q4 — [서비스]가 왜 필요한가요?
+    [`${s(1)}이 ${d.customer}에게 왜 필요한가요?`, `"${s(1)}이 왜 필요한가요?"`, d.customer, p(s(1)), '높음'],
+    // Q5 — [산업]에서 [문제] 적용 사례는?
+    [`${d.industry}에서 ${p(s(0))} 해결에 성공한 사례는 무엇인가요?`, `"${d.industry} 업체 ${p(s(0))} 사례가 있나요?"`, d.customer, p(s(0)), '높음'],
+    // Q6 — [문제] 해결 방법은?
+    [`${p(s(1))}을(를) 효과적으로 해결하는 방법은 무엇인가요?`, `"${p(s(1))} 효과적으로 해결하는 방법은?"`, d.customer, p(s(1)), '높음'],
+    // Q7 — [서비스] 도입 시 주의할 점은?
+    [`${s(0)} 도입 시 ${d.customer}가 주의해야 할 점은 무엇인가요?`, `"${s(0)} 도입 시 뭘 조심해야 하나요?"`, d.customer, p(s(0)), '중간'],
+    // Q8 — [산업] 트렌드는?
+    [`2025년 ${d.industry} 업계 ${p(s(0))} 트렌드는 어떻게 변하고 있나요?`, `"요즘 ${d.industry} 업계 ${p(s(0))} 트렌드는?"`, d.customer, p(s(0)), '높음'],
+    // S2 — 비용 공개 (서술형 유지)
+    [`${s(0)} 구축 비용 완전 공개 — ${d.customer} 규모별 가이드`, `"${s(0)} 비용이 얼마나 드나요?"`, d.customer, p(s(0)), '높음'],
+    // Q9 — [서비스] 도입 후 어떤 변화가?
+    [`${s(1)} 도입 후 ${d.customer}에게 어떤 변화가 생기나요?`, `"${s(1)} 도입 후 어떤 변화가 있나요?"`, d.customer, p(s(1)), '높음'],
+    // Q10 — [문제] 왜 반복되나요?
+    [`${d.industry}에서 ${p(s(0))} 문제가 반복되는 이유는 무엇인가요?`, `"${p(s(0))} 왜 계속 생기나요?"`, d.customer, p(s(0)), '중간'],
+    // Q11 — [고객]에게 [서비스]가 필요한가요?
+    [`${d.customer}에게 ${s(0)}가 정말 필요한가요?`, `"${d.customer}에게 ${s(0)}가 필요한가요?"`, d.customer, p(s(0)), '높음'],
+    // Q12 — [서비스] ROI 어떻게 측정하나요?
+    [`${s(0)} 도입 ROI를 어떻게 측정하나요? ${d.industry} 기준 계산법`, `"${s(0)} ROI는 어떻게 측정하나요?"`, d.customer, p(s(0)), '중간'],
+    // Q13 — [서비스] 어떻게 활용하나요?
+    [`${s(2)}를 ${d.industry} 환경에서 어떻게 활용할 수 있나요?`, `"${s(2)} 활용 방법은?"`, d.customer, p(s(2)), '높음'],
+    // Q14 — [산업]에서 [문제] 어떻게 달성하나요?
+    [`${d.industry} 분야에서 ${p(s(2))}을(를) 어떻게 달성할 수 있나요?`, `"${d.industry} 분야에서 ${p(s(2))} 어떻게 달성하나요?"`, d.customer, p(s(2)), '높음'],
+    // S3 — 도구 추천 (서술형 유지)
+    [`${p(s(0))} 개선을 위한 도구 추천 TOP 5 — ${d.industry} 전용`, `"${p(s(0))} 개선 툴 추천해주세요"`, d.customer, p(s(0)), '높음'],
+    // Q15 — [산업] 전문 회사는 어디?
+    [`${d.industry} 분야 ${p(s(0))} 전문 회사는 어디서 찾을 수 있나요?`, `"${d.industry} 전문 회사 어디 있나요?"`, d.customer, p(s(0)), '중간'],
+    // Q16 — [고객]의 [문제] 어떻게 시작하나요?
+    [`${d.customer}의 ${p(s(1))} 개선, 어떻게 시작하면 좋을까요?`, `"${d.customer}의 ${p(s(1))} 어떻게 시작하나요?"`, d.customer, p(s(1)), '높음'],
+    // S4 — FAQ 정리 (서술형 유지)
+    [`${s(0)} FAQ 완전 정리 — ${d.customer}가 가장 많이 묻는 50가지`, `"${s(0)}에 대한 자주 묻는 질문"`, d.customer, p(s(0)), '높음'],
+    // Q17 — [산업] [문제] 통계는?
+    [`${d.industry} 업계 ${p(s(0))} 현황, 어떤 통계가 있나요?`, `"${d.industry} ${p(s(0))} 현황 통계 알려주세요"`, d.customer, p(s(0)), '높음'],
+    // Q18 — [서비스] 선택 기준은?
+    [`${s(0)}를 선택할 때 어떤 기준으로 비교해야 하나요?`, `"${s(0)} 선택 기준이 뭔가요?"`, d.customer, p(s(0)), '중간'],
+    // Q19 — [문제] 실패 이유는?
+    [`${d.industry} 기업이 ${p(s(0))} 개선에 실패하는 이유는 무엇인가요?`, `"${p(s(0))} 실패하는 이유는?"`, d.customer, p(s(0)), '높음'],
+    // Q20 — [서비스] 어떻게 시작하나요?
+    [`${s(0)}를 처음 시작하려면 어떻게 해야 하나요?`, `"${s(0)} 어떻게 시작하나요?"`, d.customer, p(s(0)), '높음'],
+    // Q21 — [고객]의 [문제] 어떻게 해야 하나요?
+    [`${d.customer}의 ${p(s(1))} 문제, 어떻게 접근해야 할까요?`, `"${d.customer}의 ${p(s(1))} 어떻게 해야 하나요?"`, d.customer, p(s(1)), '중간'],
+    // S5 — 고급 전략 (서술형 유지)
+    [`${s(0)} 성과를 2배 높이는 ${d.industry} 고급 활용 전략`, `"${s(0)} 더 잘 활용하는 방법은?"`, d.customer, p(s(0)), '중간'],
+    // Q22 — [산업] 시장 변화 동향은?
+    [`${d.industry} 시장에서 ${p(s(1))} 흐름은 어떻게 바뀌고 있나요?`, `"${d.industry} 시장에서 ${p(s(1))} 변화 동향은?"`, d.customer, p(s(1)), '중간'],
+    // Q23 — 경쟁사 vs 자사 어떤 게 나은가?
+    [`${d.company}와 경쟁사 중 ${d.customer}에게 더 적합한 선택은 무엇인가요?`, `"${d.industry} 서비스 추천해주세요"`, d.customer, p(s(0)), '높음'],
+    // Q24 — [문제]에 효과적인 방법은?
+    [`${p(s(0))} 개선에 실제로 효과 있는 방법은 무엇인가요?`, `"${p(s(0))}에 효과적인 방법 알려주세요"`, d.customer, p(s(0)), '높음'],
+    // Q25 — [서비스]로 시간 절약 방법은?
+    [`${s(0)}로 ${d.customer}의 ${p(s(0))}에 드는 시간을 줄이는 방법은?`, `"${p(s(0))} 시간 절약하는 방법은?"`, d.customer, p(s(0)), '높음'],
+    // Q26 — 전문가는 [문제]를 어떻게 보나?
+    [`${d.industry} 전문가는 ${p(s(0))} 문제를 어떻게 바라보나요?`, `"전문가 의견: ${p(s(0))} 어떻게 봐야 하나?"`, d.customer, p(s(0)), '높음'],
+    // Q27 — 실제 사용 후기는?
+    [`${d.company}를 도입한 ${d.customer}의 실제 경험은 어떤가요?`, `"${d.company} 실제 사용 후기 알려주세요"`, d.customer, p(s(0)), '높음'],
+  ];
+
+  // AI 콘텐츠 제목 데이터 확인
+  const aiTitles = d.aiData?.contentTitles;
+  const isAiGenerated = aiTitles && aiTitles.length > 0;
+
+  // AI 데이터 → 통합 테이블 행 생성
+  const aiRows = isAiGenerated ? aiTitles.map((t, i) => `
+    <tr class="ai-row">
+      <td style="font-weight:700;color:var(--primary)">${i+1}</td>
+      <td style="font-weight:600">${t.title} <span class="ai-gen-badge">AI</span></td>
+      <td style="font-style:italic;color:var(--gray-500)">${t.intent || '-'}</td>
+      <td>${d.customer}</td>
+      <td><span class="badge badge-primary">${t.targetService || d.services[0]}</span></td>
+      <td><span class="badge ${t.citation==='높음'?'badge-high':t.citation==='중간'?'badge-mid':'badge-low'}">${t.citation==='높음'?'🔴':t.citation==='중간'?'🟡':'🟢'} ${t.citation||'높음'}</span></td>
+    </tr>`) : [];
+
+  // 로컬 템플릿 행 생성 (AI 없거나 fallback)
+  const localRows = templates.map((t, i) => `
+    <tr>
+      <td style="font-weight:700;color:var(--primary)">${(isAiGenerated ? aiTitles.length : 0) + i + 1}</td>
+      <td style="font-weight:600">${t[0]}</td>
+      <td style="font-style:italic;color:var(--gray-500)">${t[1]}</td>
+      <td>${t[2]}</td>
+      <td><span class="badge badge-primary">${t[3]}</span></td>
+      <td><span class="badge ${t[4]==='높음'?'badge-high':t[4]==='중간'?'badge-mid':'badge-low'}">${t[4]==='높음'?'🔴':t[4]==='중간'?'🟡':'🟢'} ${t[4]}</span></td>
+    </tr>`);
+
+  const totalCount = (isAiGenerated ? aiTitles.length : 0) + templates.length;
+
+  return `
+  <section class="report-section" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <div class="section-title-wrap">
+        <h2>AI 인용용 콘텐츠 전략${isAiGenerated ? ' <span class="ai-gen-badge">AI 생성 포함</span>' : ''}</h2>
+        <p>생성형 AI가 인용하는 콘텐츠 유형 — 총 ${totalCount}개 제목${isAiGenerated ? ` (AI ${aiTitles.length}개 + 로컬 ${templates.length}개)` : ''}</p>
+      </div>
+    </div>
+    ${isAiGenerated ? `
+    <div class="info-box" style="background:#ede9fe;border-color:#c4b5fd;margin-bottom:12px">
+      <span class="info-icon">✨</span>
+      <span><strong>AI가 ${d.company} 맞춤 콘텐츠 제목 ${aiTitles.length}개를 생성</strong>했습니다. 위 제목들은 실제 생성형 AI 인용 패턴을 분석해 최적화된 결과입니다.</span>
+    </div>` : ''}
+    ${d.aiErrors?.find(e => e.section === '콘텐츠 제목') ? `
+    <div class="ai-fallback-notice">⚠️ AI 콘텐츠 제목 생성 실패 (${d.aiErrors.find(e=>e.section==='콘텐츠 제목').error}) — 로컬 템플릿으로 표시됩니다.</div>` : ''}
+    <div class="info-box success">
+      <span class="info-icon">🎯</span>
+      <span><strong>인용 가능성 높음</strong>인 콘텐츠부터 우선 제작하세요. 정의형·방법형·사례형은 AI 인용율이 60% 이상입니다.</span>
+    </div>
+    <div class="content-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>콘텐츠 제목</th>
+            <th>의도 / 질문 형태</th>
+            <th>타겟 고객</th>
+            <th>관련 서비스</th>
+            <th>인용 가능성</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[...aiRows, ...localRows].join('')}
+        </tbody>
+      </table>
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 5: CONTENT EXPANSION
+// ===========================
+function genSection5(d) {
+  // 문제 배열 안전 참조
+  const p0 = d.problems[0];
+  const p1 = d.problems[1] || d.problems[0];
+  const p2 = d.problems[2] || d.problems[0];
+  const s0 = d.services[0];
+  const s1 = d.services[1] || d.services[0];
+
+  const industryContent = {
+    title: `${d.industry} 산업군별 콘텐츠`,
+    icon: '🏭',
+    problems: [
+      `${d.industry} 환경 특유의 ${p0} 구조적 복잡성`,
+      `${d.industry} 업계 내 ${p1} 비효율 및 반복 손실`,
+      `${d.industry} 기업의 ${p2} 대응 속도 지연`
+    ],
+    titles: [
+      `${d.industry} 기업의 ${p0} 해결을 위한 실전 가이드`,
+      `${d.industry} 업계에서 ${s0}를 도입한 성공 사례 분석`,
+      `${d.industry} 환경에 맞는 ${s0} 운영 체크리스트`,
+      `${d.industry} 전문가가 추천하는 ${p0} 솔루션 TOP 3`,
+      `${d.industry} 기업이 반드시 알아야 할 ${p1} 개선 5단계`
+    ],
+    example: `${d.industry} 업계는 ${p0}과(와) ${p1}이라는 이중 과제를 안고 있습니다. ${d.company}는 ${d.industry} 기업 전문 도입 경험을 바탕으로 업계에 최적화된 맞춤 솔루션을 제공합니다.`
+  };
+
+  const customerContent = {
+    title: `${d.customer} 고객 유형별 콘텐츠`,
+    icon: '👥',
+    problems: [
+      `${d.customer}의 ${p0} 해결을 위한 예산·인력 제약`,
+      `${d.customer} 내부 의사결정 구조로 인한 ${p1} 지연`,
+      `${d.customer}의 ${p2} 도입 역량 및 전문성 부족`
+    ],
+    titles: [
+      `${d.customer}를 위한 ${s0} 완전 입문 가이드`,
+      `${d.customer}가 ${s0} 도입 시 고려해야 할 5가지`,
+      `${d.customer} 예산 내에서 ${p0}을(를) 최대한 개선하는 전략`,
+      `${d.customer} 의사결정자를 위한 ${s0} 도입 ROI 분석`,
+      `${d.customer} 성공 사례: ${p0} 해결 3개월 여정`
+    ],
+    example: `${d.customer}는 일반적으로 ${p0}과(와) ${p1} 두 가지 문제를 동시에 안고 있습니다. ${d.company}의 ${s0}는 ${d.customer} 환경에 특화된 온보딩·지원 체계로 빠른 성과 달성을 돕습니다.`
+  };
+
+  // 문제 유형 목록 — 입력된 problems만 사용
+  const problemList = d.problems.length >= 3
+    ? d.problems.slice(0, 3)
+    : [...d.problems, ...d.problems].slice(0, 3);
+
+  const problemContent = {
+    title: `문제 유형별 콘텐츠`,
+    icon: '🔧',
+    problems: problemList,
+    titles: [
+      `${p0} 해결을 위한 단계별 완전 가이드 — ${d.industry} 실전`,
+      `${p0} 진단 체크리스트 (${d.customer} 맞춤형)`,
+      `${p1}을(를) 50% 개선한 ${d.industry} 기업들의 공통 전략`,
+      `${d.industry}에서 가장 효과적인 ${p0} 해결 방법 3가지`,
+      `${p2} 대응에 실패하는 기업들이 놓치는 3가지`
+    ],
+    example: `"${p0}을(를) 해결하려면 어떻게 해야 하나요?" — 이 질문에 정확히 답하는 콘텐츠가 ChatGPT, Perplexity의 상위 인용 대상이 됩니다. ${d.company}의 콘텐츠 전략은 ${p0}, ${p1}, ${p2} 세 가지 문제 유형을 모두 직접 타겟팅합니다.`
+  };
+
+  const tabs = [industryContent, customerContent, problemContent];
+
+  return `
+  <section class="report-section" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <div class="section-title-wrap">
+        <h2>산업/고객 유형 기반 콘텐츠 확장</h2>
+        <p>산업군별, 고객유형별, 문제유형별 맞춤 콘텐츠 전략</p>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab-list">
+        ${tabs.map((t, i) => `<button class="tab-btn ${i===0?'active':''}" onclick="switchTab(this, 'tab5-${i}')">${t.icon} ${t.title}</button>`).join('')}
+      </div>
+      ${tabs.map((t, i) => `
+      <div class="tab-pane ${i===0?'active':''}" id="tab5-${i}">
+        <div class="expansion-grid" style="margin-top:20px">
+          <div class="expansion-card">
+            <h4><span class="icon">❗</span> 주요 문제</h4>
+            <ul class="problem-list">
+              ${t.problems.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="expansion-card">
+            <h4><span class="icon">📝</span> 콘텐츠 제목 예시</h4>
+            <ul class="content-list">
+              ${t.titles.map(ct => `<li>${ct}</li>`).join('')}
+            </ul>
+          </div>
+          <div class="expansion-card">
+            <h4><span class="icon">💬</span> 실제 설명 문장 예시</h4>
+            <div class="example-text">${t.example}</div>
+            <div style="margin-top:12px;font-size:13px;color:var(--gray-600)">
+              <strong>이 문장의 GEO 포인트:</strong><br>
+              • 구체적 문제명 언급<br>
+              • 회사명과 서비스명 연결<br>
+              • 정량적 성과 제시<br>
+              • 타겟 고객 명시
+            </div>
+          </div>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 6: SCHEMA
+// ===========================
+function genSection6(d) {
+  const domain = d.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+  const schemas = [
+    {
+      name: 'Organization',
+      page: '메인 페이지, About 페이지',
+      purpose: 'AI와 구글이 브랜드 엔터티를 인식하도록 기본 정보를 구조화',
+      code: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": d.company,
+        "url": d.url,
+        "description": `${d.company}는 ${d.industry} 분야에서 ${d.problems.slice(0,2).join(', ')}을 해결하는 전문 기업입니다.`,
+        "foundingDate": "2020",
+        "industry": d.industry,
+        "serviceArea": "대한민국",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "availableLanguage": "Korean",
+          "url": `${d.url}/contact`
+        },
+        "knowsAbout": [d.industry, ...d.services.slice(0,3), ...(d.expandedIndustries || [])],
+        "sameAs": [
+          `https://www.linkedin.com/company/${d.company.replace(/\s/g,'-').toLowerCase()}`,
+          `https://blog.naver.com/${d.company.replace(/\s/g,'').toLowerCase()}`
+        ]
+      }, null, 2)
+    },
+    {
+      name: 'Service',
+      page: `각 서비스 랜딩 페이지 (${d.services[0]} 예시)`,
+      purpose: '핵심 서비스를 AI가 인식할 수 있는 구조로 정의. 서비스 추천 질문의 핵심 신호',
+      code: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": d.services[0],
+        "provider": {
+          "@type": "Organization",
+          "name": d.company,
+          "url": d.url
+        },
+        "description": `${d.services[0]}은 ${d.industry} 분야 ${d.customer}를 위한 ${d.problems[0]} 해결 전문 서비스입니다.`,
+        "serviceType": d.services[0],
+        "areaServed": "KR",
+        "audience": {
+          "@type": "BusinessAudience",
+          "audienceType": d.customer
+        },
+        "url": `${d.url}/services/${d.services[0].replace(/\s/g,'-').toLowerCase()}`,
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "KRW",
+          "availability": "https://schema.org/InStock"
+        }
+      }, null, 2)
+    },
+    {
+      name: 'Article',
+      page: '블로그 글, 가이드 콘텐츠 페이지',
+      purpose: '각 콘텐츠를 전문 아티클로 구조화. AI가 콘텐츠를 인용할 때 출처 신뢰도 부여',
+      code: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": `${d.services[0]}이란? ${d.industry} 기업을 위한 완전 가이드`,
+        "description": `${d.industry} 분야 ${d.customer}를 위한 ${d.services[0]} 완전 가이드. ${d.problems[0]} 해결 방법 포함.`,
+        "author": {
+          "@type": "Organization",
+          "name": d.company,
+          "url": d.url
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": d.company,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${d.url}/logo.png`
+          }
+        },
+        "datePublished": new Date().toISOString().split('T')[0],
+        "dateModified": new Date().toISOString().split('T')[0],
+        "articleSection": d.industry,
+        "keywords": `${d.services[0]}, ${d.industry}, ${d.problems[0]}, ${d.customer}`,
+        "url": `${d.url}/blog/${d.services[0].replace(/\s/g,'-').toLowerCase()}-guide`
+      }, null, 2)
+    },
+    {
+      name: 'FAQPage',
+      page: '서비스 페이지 FAQ 섹션, FAQ 전용 페이지',
+      purpose: 'Perplexity, ChatGPT가 Q&A 형태로 직접 인용하는 핵심 Schema',
+      code: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": `${d.services[0]}이란 무엇인가요?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `${d.services[0]}은 ${d.industry} 분야 ${d.customer}가 ${d.problems[0]}을 해결할 수 있도록 ${d.company}가 제공하는 전문 솔루션입니다.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `${d.services[0]} 도입 비용은 얼마인가요?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `${d.services[0]} 도입 비용은 기업 규모와 요구사항에 따라 다릅니다. ${d.company}는 무료 상담을 통해 맞춤형 견적을 제공합니다. ${d.url}/contact에서 문의하세요.`
+            }
+          },
+          {
+            "@type": "Question",
+            "name": `${d.services[0]}는 ${d.customer}에게도 적합한가요?`,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": `네, ${d.company}의 ${d.services[0]}는 특히 ${d.customer}에 최적화되어 있습니다. 전담 온보딩 팀이 초기 설정부터 운영까지 지원합니다.`
+            }
+          }
+        ]
+      }, null, 2)
+    },
+    {
+      name: 'HowTo',
+      page: '가이드 콘텐츠 페이지, 방법론 설명 페이지',
+      purpose: '"어떻게 하나요?" 형태의 질문에 AI가 단계별로 인용하도록 구조화',
+      code: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        "name": `${d.problems[0]} 해결하는 방법: ${d.company} 완전 가이드`,
+        "description": `${d.industry} 분야 ${d.customer}를 위한 ${d.problems[0]} 단계별 해결 방법`,
+        "totalTime": "PT4H",
+        "tool": [
+          {
+            "@type": "HowToTool",
+            "name": d.services[0]
+          }
+        ],
+        "step": [
+          {
+            "@type": "HowToStep",
+            "name": "현황 진단",
+            "text": `현재 ${d.problems[0]} 수준을 체크리스트로 진단합니다.`,
+            "url": `${d.url}/guides/${d.problems[0].replace(/\s/g,'-')}#step1`
+          },
+          {
+            "@type": "HowToStep",
+            "name": "목표 설정",
+            "text": `측정 가능한 KPI를 설정합니다 (예: 3개월 내 30% 개선).`,
+            "url": `${d.url}/guides/${d.problems[0].replace(/\s/g,'-')}#step2`
+          },
+          {
+            "@type": "HowToStep",
+            "name": `${d.services[0]} 도입`,
+            "text": `${d.company}의 ${d.services[0]}를 도입하고 온보딩을 완료합니다.`,
+            "url": `${d.url}/guides/${d.problems[0].replace(/\s/g,'-')}#step3`
+          },
+          {
+            "@type": "HowToStep",
+            "name": "성과 측정",
+            "text": "주간 리포트로 KPI를 추적하고 최적화합니다.",
+            "url": `${d.url}/guides/${d.problems[0].replace(/\s/g,'-')}#step4`
+          }
+        ]
+      }, null, 2)
+    }
+  ];
+
+  function syntaxHighlight(json) {
+    return json
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+        let cls = 'json-num';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) cls = 'json-key';
+          else cls = 'json-str';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+  }
+
+  return `
+  <section class="report-section" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <div class="section-title-wrap">
+        <h2>Schema(구조화 데이터) 적용 설계</h2>
+        <p>5개 핵심 Schema JSON-LD — ${d.company} 실제 정보 반영</p>
+      </div>
+    </div>
+    <div class="info-box warning">
+      <span class="info-icon">⚠️</span>
+      <span>아래 JSON-LD 코드를 각 페이지의 <code>&lt;head&gt;</code> 태그 내 <code>&lt;script type="application/ld+json"&gt;</code>으로 삽입하세요. Google Search Console에서 구조화 데이터 테스트 필수.</span>
+    </div>
+    <div class="schema-cards">
+      ${schemas.map(s => `
+      <div class="schema-card">
+        <div class="schema-card-header">
+          <div class="schema-card-title">📦 ${s.name} Schema</div>
+          <div class="schema-card-meta">
+            <span class="badge badge-primary">JSON-LD</span>
+          </div>
+        </div>
+        <div class="schema-body">
+          <div class="schema-info-grid">
+            <div class="schema-info-item">
+              <label>적용 페이지</label>
+              <p>${s.page}</p>
+            </div>
+            <div class="schema-info-item">
+              <label>적용 목적</label>
+              <p>${s.purpose}</p>
+            </div>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-lang">JSON-LD</span>
+              <button class="btn-copy" onclick="copyCode(this)">📋 복사</button>
+            </div>
+            <pre><code>${syntaxHighlight(s.code)}</code></pre>
+          </div>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 7: EXTERNAL GEO
+// ===========================
+function genSection7(d) {
+  const p0 = d.problems[0];
+  const p1 = d.problems[1] || d.problems[0];
+  const s0 = d.services[0];
+  const s1 = d.services[1] || d.services[0];
+
+  const channels = [
+    {
+      title: '블로그/미디어 콘텐츠 전략',
+      icon: '📰',
+      methods: [
+        `${d.industry} 전문 미디어에 월 2편 이상 기고 (IT조선, 벤처스퀘어 등)`,
+        `네이버 블로그/브런치에 ${s0}의 ${p0} 해결 사례 심층 분석 글 발행`,
+        `미디엄(Medium) 영문 기고 — ${d.industry} 분야 ${p0} 관련 글로벌 AI 인덱싱 확대`,
+        `보도자료 배포 (뉴스와이어 등) — ${d.company}의 ${p1} 성과 발표 시마다`,
+        `${d.company} 공식 블로그에 주 2회 ${d.industry} 업계 전문 콘텐츠 발행`
+      ],
+      example: `기고 제목 예시: "${d.company}가 ${d.industry} ${d.customer}의 ${p0} 문제를 해결한 방법 — 실제 도입 사례 공개"`,
+      effect: `외부 권위 사이트에서 ${d.company} 언급 증가 → AI가 복수 출처 확인 → 신뢰도 가중치 급상승`
+    },
+    {
+      title: '산업 사례 콘텐츠 전략',
+      icon: '📊',
+      methods: [
+        `${d.industry} 분야 ${d.customer} 고객사 도입 사례 월 1편 발행 (고객 동의 필수)`,
+        `"${p0} 도입 전 vs 후" 정량 비교 데이터 포함 필수`,
+        `고객 인터뷰 영상 + 텍스트 전문 + 요약 발행 (3가지 형태)`,
+        `케이스 스터디 PDF 제작 — ${p0} 개선 수치 + AI 인덱싱 동시 효과`,
+        `${d.customer} 기업과 공동 웨비나 개최 + ${d.industry} 트렌드 리포트 발행`
+      ],
+      example: `케이스 스터디 제목: "${d.customer} A사, ${d.company} ${s0} 도입 6개월 만에 ${p0} 47% 개선 달성"`,
+      effect: `"${d.industry} ${p0} 사례" 질문에서 AI가 자사 케이스 스터디 직접 인용`
+    },
+    {
+      title: '전문가 인터뷰 전략',
+      icon: '🎤',
+      methods: [
+        `대표/임원진을 ${d.industry} 분야 ${p0} 전문가로 포지셔닝 — 언론 인터뷰 적극 응대`,
+        `팟캐스트 출연: ${d.industry} 관련 국내 팟캐스트 3~5개 섭외`,
+        `유튜브 채널: "${p0} 해결 방법" 주간 영상 시리즈 (${d.customer} 대상)`,
+        `링크드인 아티클: 대표 명의 ${d.industry} + ${p0} 인사이트 주 2회 발행`,
+        `언론 코멘트 제공: ${d.industry} 기자들에게 ${p1} 전문가로 등록`
+      ],
+      example: `인터뷰 제목: "${d.company} 대표가 말하는 ${d.industry} ${d.customer}의 ${p0} 해결 핵심 전략"`,
+      effect: `대표의 전문가 신뢰도가 브랜드 엔터티 신뢰도로 연결 → AI 인용 우선순위 상승`
+    },
+    {
+      title: '백서/리포트 전략',
+      icon: '📑',
+      methods: [
+        `연간 ${d.industry} 트렌드 리포트 발행 — ${p0}, ${p1} 현황 포함 (무료 PDF)`,
+        `${d.customer} ${p0} 현황 조사 보고서 — 100개사 이상 설문 결과`,
+        `${s0} 도입 ROI 분석 백서 (15~20페이지): ${d.industry} 기준 수치 포함`,
+        `${d.industry} 업계 ${p0} 벤치마크 데이터 보고서 — 업계 최초 발행 목표`,
+        `영문 백서 별도 제작 — AI 학습 데이터 글로벌 인덱싱 활용`
+      ],
+      example: `백서 제목: "2025 ${d.industry} ${d.customer}의 ${p0} 현황과 해결 전략 — ${d.company} 연간 리포트"`,
+      effect: `자사 통계가 외부 콘텐츠에서 인용 시작 → AI가 "${d.industry} ${p0} 통계 제공 기관"으로 ${d.company} 인식`
+    },
+    {
+      title: '커뮤니티 언급 전략',
+      icon: '💬',
+      methods: [
+        `${d.industry} 관련 카카오오픈채팅, 네이버 카페에서 전문 답변 제공`,
+        `블라인드, 리멤버 등 B2B 커뮤니티에서 ${d.problems[0]} 관련 질문에 전문가 답변`,
+        `Reddit의 관련 서브레딧에 영문 기여 (글로벌 AI 인덱싱)`,
+        `Quora/Stack Exchange에 ${s0} 및 ${p0} 관련 질문 답변 꾸준히 작성`,
+        `슬랙 채널/디스코드 서버 개설 — ${d.industry} ${d.customer} 전문가 커뮤니티 운영`
+      ],
+      example: `네이버 카페 답변: "[${p0}] 저희 회사는 ${d.company}의 ${s0} 도입 후 3개월 만에 ${p1}까지 함께 해결했어요. 구체적인 방법은..."`,
+      effect: `${d.industry} 커뮤니티 링크 → 자사 사이트 유입 → AI가 ${d.customer} 추천 맥락에서 ${d.company} 브랜드 인식`
+    }
+  ];
+
+  return `
+  <section class="report-section" id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <div class="section-title-wrap">
+        <h2>외부 GEO 전략 (AI 인용 유도)</h2>
+        <p>자사 사이트 밖에서 AI 인용 신호를 만드는 5가지 채널 전략</p>
+      </div>
+    </div>
+    <div class="accordion">
+      ${channels.map((ch, i) => `
+      <div class="accordion-item">
+        <div class="accordion-header" onclick="toggleAccordion(this)">
+          <div class="accordion-title">
+            <span class="icon">${ch.icon}</span>
+            <h3>${ch.title}</h3>
+          </div>
+          <span class="accordion-arrow">▼</span>
+        </div>
+        <div class="accordion-body">
+          <div class="accordion-inner">
+            <div class="strategy-section">
+              <h4>⚡ 실행 방법</h4>
+              <ul class="strategy-list">
+                ${ch.methods.map(m => `<li>${m}</li>`).join('')}
+              </ul>
+            </div>
+            <div class="strategy-section">
+              <h4>💬 실제 예시</h4>
+              <div class="example-text">${ch.example}</div>
+            </div>
+            <div class="effect-box">${ch.effect}</div>
+          </div>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 8: 90-DAY ROADMAP
+// ===========================
+function genSection8(d) {
+  const s0 = d.services[0];
+  const s1 = d.services[1] || d.services[0];
+  const p0 = d.problems[0];
+  const p1 = d.problems[1] || d.problems[0];
+
+  const phases = [
+    {
+      name: 'Phase 1: 기반 구축',
+      range: 'Week 1~4',
+      weeks: [
+        { w: 'W1', tasks: `${d.company} 브랜드 엔터티 정의문 작성 ("${d.company}는 ${d.industry} 분야 ${p0} 해결 전문 기업"), About 페이지 재작성, Organization Schema 삽입`, output: `${d.company} 브랜드 정의문 3개, About 페이지 v2`, effect: 'AI가 ${d.company}를 독립 엔터티로 인식 시작' },
+        { w: 'W2', tasks: `${s0} 전용 랜딩 페이지 신규 제작 (${d.customer} 맞춤 정의 문장 포함), Service Schema 적용`, output: `${s0} 전용 랜딩 페이지 + ${p0} 해결 정의 문장`, effect: `"${s0} 추천" 질문에서 AI 인덱싱 시작` },
+        { w: 'W3', tasks: `${s1} 전용 랜딩 페이지 제작 (${p1} 해결 포커스), FAQPage Schema 적용`, output: `${s1} 랜딩 페이지 + ${d.customer} 대상 FAQ 20개`, effect: 'FAQ 직접 인용 가능성 확보' },
+        { w: 'W4', tasks: `나머지 서비스 페이지 완성, HowTo Schema 적용, 전체 Schema 검증 (Google Rich Results Test)`, output: '전 서비스 페이지 완성, 5개 Schema 완전 적용', effect: `${d.industry} 환경 구조화 데이터 기반 완성` }
+      ]
+    },
+    {
+      name: 'Phase 2: 콘텐츠 확장',
+      range: 'Week 5~9',
+      weeks: [
+        { w: 'W5', tasks: `정의형 콘텐츠 5편 발행: "${s0}이란?", "${p0}이란?" 등, Article Schema 적용`, output: `${d.industry} 정의형 가이드 5편`, effect: `"${p0} 정의" 질문 인용 가능성 확보` },
+        { w: 'W6', tasks: `${p0} 해결형 콘텐츠 5편 발행, HowTo Schema 적용 (${d.customer} 대상)`, output: `${d.customer}용 실전 가이드 5편`, effect: `"${p0} 어떻게 해결?" 질문 인용 시작` },
+        { w: 'W7', tasks: `${d.industry} 산업 특화 콘텐츠 5편, ${p1} 현황 통계 페이지 제작`, output: `${d.industry} 특화 콘텐츠 5편 + 통계 페이지`, effect: `"${d.industry} 분야 ${p1}" 질문 전문성 인식` },
+        { w: 'W8', tasks: `${d.customer} 특화 가이드 5편, ${d.customer} 성공 사례 2편 (${p0} 개선 수치 포함)`, output: `${d.customer} 특화 콘텐츠 7편`, effect: `"${d.customer}에게 맞는 솔루션" 질문 인용 확보` },
+        { w: 'W9', tasks: `${s0} vs 경쟁 방식 비교 콘텐츠 3편, FAQ 추가 확장, 전체 내부 링크 최적화`, output: '비교 가이드 3편, 사이트 내부 링크 맵', effect: '콘텐츠 연결성 강화 → AI 크롤링 깊이 향상' }
+      ]
+    },
+    {
+      name: 'Phase 3: 외부 인용 확대',
+      range: 'Week 10~13',
+      weeks: [
+        { w: 'W10', tasks: `${d.industry} 전문 미디어 기고 2편 제출, ${p0} 성과 보도자료 1건 배포`, output: '외부 기고문 2편, 언론 노출 1건', effect: '외부 권위 사이트 첫 브랜드 언급' },
+        { w: 'W11', tasks: `${d.industry} ${d.customer} 대상 ${p0}/${p1} 트렌드 연간 리포트 발행, 소셜 배포`, output: `${d.company} 연간 리포트 PDF + 랜딩 페이지`, effect: `AI가 "${d.industry} 통계" 질문에서 ${d.company} 데이터 인용` },
+        { w: 'W12', tasks: `${d.industry} 관련 팟캐스트 출연 섭외, ${d.customer} 커뮤니티 전문 답변 시작, 링크드인 주 2회 발행`, output: '팟캐스트 1회 이상, 커뮤니티 전문 답변 10개', effect: '다채널 외부 언급 → AI 복수 출처 확인 시작' },
+        { w: 'W13', tasks: `"${p0}", "${s0}" 키워드로 ChatGPT/Perplexity/Gemini 30개 질문 테스트, GEO 1차 성과 리포트 작성`, output: `${d.company} GEO 성과 1차 리포트, 90일 개선 액션 플랜`, effect: '정량적 AI 인용 효과 첫 확인 및 차기 전략 수립' }
+      ]
+    }
+  ];
+
+  return `
+  <section class="report-section" id="s8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <div class="section-title-wrap">
+        <h2>90일 실행 로드맵</h2>
+        <p>Week 단위 실행 계획 — 3개 Phase로 구성</p>
+      </div>
+    </div>
+    <div class="timeline">
+      ${phases.map(phase => `
+      <div class="phase-header">
+        <span>${phase.name}</span>
+        <span class="phase-badge">${phase.range}</span>
+      </div>
+      <div class="week-rows">
+        <div class="week-row week-header">
+          <div class="week-cell week-num">주차</div>
+          <div class="week-cell">수행 작업</div>
+          <div class="week-cell">산출물</div>
+          <div class="week-cell">예상 효과</div>
+        </div>
+        ${phase.weeks.map(w => `
+        <div class="week-row">
+          <div class="week-cell week-num">${w.w}</div>
+          <div class="week-cell">${w.tasks}</div>
+          <div class="week-cell">${w.output}</div>
+          <div class="week-cell">${w.effect}</div>
+        </div>
+        `).join('')}
+      </div>
+      `).join('')}
+    </div>
+  </section>`;
+}
+
+// ===========================
+// SECTION 9: KPI
+// ===========================
+function genSection9(d) {
+  const kpis = [
+    {
+      icon: '🤖',
+      title: 'AI 검색 결과 인용 횟수',
+      target: '월 50+',
+      targetLabel: '인용 건수 목표 (90일 후)',
+      klass: 'kpi-1',
+      details: [
+        ['측정 방법', 'ChatGPT/Perplexity 수동 질의 테스트'],
+        ['측정 도구', 'Perplexity Citations 직접 확인'],
+        ['측정 주기', '주 1회 (월요일)'],
+        ['초기 목표', '3개월 내 월 20회 인용']
+      ]
+    },
+    {
+      icon: '🔍',
+      title: '특정 질문에서 등장 여부',
+      target: '10개',
+      targetLabel: '핵심 질문 인용 달성 목표',
+      klass: 'kpi-2',
+      details: [
+        ['측정 방법', '사전 설정한 핵심 질문 30개 주간 테스트'],
+        ['측정 도구', 'ChatGPT, Claude, Gemini 동시 테스트'],
+        ['측정 주기', '주 1회 (동일 질문셋 반복)'],
+        ['초기 목표', '30일 내 5개 질문 인용']
+      ]
+    },
+    {
+      icon: '📣',
+      title: '브랜드 언급 증가',
+      target: '+200%',
+      targetLabel: '외부 브랜드 언급 증가율 (90일)',
+      klass: 'kpi-3',
+      details: [
+        ['측정 방법', `Google Alerts "${d.company}" 모니터링`],
+        ['측정 도구', 'Google Alerts, Brand24, Mention.com'],
+        ['측정 주기', '월 1회 취합'],
+        ['초기 기준', '현재 월간 언급 횟수 기록']
+      ]
+    },
+    {
+      icon: '📈',
+      title: '서비스 관련 질문 노출',
+      target: '30개',
+      targetLabel: '서비스 키워드 인용 달성 질문 수',
+      klass: 'kpi-4',
+      details: [
+        ['측정 방법', `"${d.services[0]} 추천" 등 서비스 관련 질문 테스트`],
+        ['측정 도구', 'Perplexity, ChatGPT, Copilot 직접 테스트'],
+        ['측정 주기', '격주 1회'],
+        ['초기 목표', '60일 내 10개 질문 인용']
+      ]
+    }
+  ];
+
+  const p0 = d.problems[0];
+  const p1 = d.problems[1] || d.problems[0];
+  const s0 = d.services[0];
+
+  const measureSteps = [
+    { title: '질의 세트 설정 (30개)', desc: `${d.company} 관련 핵심 질문 30개를 사전에 작성.\n예시 질문:\n• "${d.industry} 분야 ${p0} 해결 방법은?"\n• "${s0} 추천 업체는?"\n• "${d.customer}에게 맞는 ${p1} 솔루션 어디 있나요?"\n• "${d.company}는 어떤 서비스를 제공하나요?"` },
+    { title: '주간 AI 질의 테스트 (매주 월요일)', desc: `ChatGPT(GPT-4o), Claude, Perplexity, Gemini 4개 AI에 동일 질문 30개를 입력. ${d.company} 언급 여부 · 위치(Source / 본문 인용 / 추천 목록) · 인용 문장 원문을 기록` },
+    { title: '스프레드시트 추적 (Google Sheets)', desc: `날짜 | 질문 | AI 종류 | ${d.company} 언급여부 | 인용 위치 | 인용 문장 | 출처 URL 형태로 매주 기록. ${d.problems.length > 1 ? d.problems.slice(0,2).join(', ') : p0} 키워드 별도 시트 분리 관리 추천` },
+    { title: '브랜드 언급 모니터링 (자동화)', desc: `Google Alerts에 "${d.company}", "${s0}", "${d.industry} ${p0}" 키워드 등록. 주간 알림으로 외부 블로그 · 뉴스 · 커뮤니티 언급 자동 추적` },
+    { title: '월간 GEO 성과 리포트', desc: `인용 횟수 월별 추이 그래프, 신규 인용된 질문 목록, ${p0} · ${p1} 관련 질문별 인용율, 인용되지 않은 질문의 콘텐츠 개선 계획 포함` }
+  ];
+
+  return `
+  <section class="report-section" id="s9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <div class="section-title-wrap">
+        <h2>KPI 및 성과 측정 설계</h2>
+        <p>AI 인용 성과를 실제로 측정하는 체계 — ${d.company} 맞춤 KPI</p>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      ${kpis.map(k => `
+      <div class="kpi-card ${k.klass}">
+        <div class="kpi-icon">${k.icon}</div>
+        <div class="kpi-title">${k.title}</div>
+        <div class="kpi-target">${k.target}</div>
+        <div class="kpi-target-label">${k.targetLabel}</div>
+        <div class="kpi-details">
+          ${k.details.map(r => `<div class="kpi-detail-row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}
+        </div>
+      </div>
+      `).join('')}
+    </div>
+    <div class="measurement-section">
+      <h3>📐 실제 성과 측정 방법 (5단계)</h3>
+      <div class="measurement-steps">
+        ${measureSteps.map((s, i) => `
+        <div class="measurement-step">
+          <div class="num">${i+1}</div>
+          <div class="text">
+            <h4>${s.title}</h4>
+            <p>${s.desc}</p>
+          </div>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="info-box success" style="margin-top:20px">
+      <span class="info-icon">✅</span>
+      <span><strong>이 보고서를 기반으로 바로 시작하세요.</strong> 1단계 브랜드 엔터티 정의문 작성 → Schema 삽입 → 콘텐츠 발행 순으로 진행하면 90일 이내 ${d.company}가 생성형 AI에서 인용되기 시작합니다.</span>
+    </div>
+  </section>`;
+}
+
+// ===========================
+// COMPETITOR ANALYSIS ENGINE
+// ===========================
+
+// URL에서 도메인명 추출 (헬퍼)
+function extractDomainName(url) {
+  try {
+    const u = new URL(url.startsWith('http') ? url : 'https://' + url);
+    return u.hostname.replace(/^www\./, '').split('.')[0];
+  } catch(e) {
+    return url.replace(/https?:\/\//,'').split('/')[0].split('.')[0] || url;
+  }
+}
+
+// URL 경로/도메인에서 서비스 힌트 키워드 추출
+function extractCompetitorHints(url) {
+  const raw = url.toLowerCase().replace(/https?:\/\//,'').replace(/www\./,'');
+  const tokens = raw.split(/[\.\-\/\_\?\=\&\s]+/).filter(t => t.length > 2);
+
+  // 서비스 관련 의미 있는 단어 필터
+  const stopwords = new Set(['com','co','kr','io','net','org','ai','app','the','and','for','www','html','index','page','main','home']);
+  return tokens.filter(t => !stopwords.has(t)).slice(0, 8);
+}
+
+// 산업+서비스 기반으로 경쟁사 추정 서비스 생성
+function inferCompetitorServices(hints, d) {
+  const industryKeywords = {
+    'AI': ['AI 자동화 도구', 'LLM 기반 서비스', 'AI 어시스턴트', '챗봇 솔루션', 'AI 분석 대시보드'],
+    '마케팅': ['마케팅 자동화 플랫폼', '광고 성과 분석', 'SNS 관리 툴', 'CRM 연동 서비스', '리드 관리 솔루션'],
+    '교육': ['온라인 강의 플랫폼', 'LMS 시스템', 'AI 튜터링', '학습 분석 도구', '콘텐츠 제작 지원'],
+    '의료': ['전자의무기록(EMR)', '원격 진료 플랫폼', '의료 데이터 분석', '환자 관리 시스템', '건강 모니터링'],
+    '금융': ['디지털 뱅킹', '자산 관리 서비스', '결제 솔루션', '재무 분석 도구', '대출 심사 자동화'],
+    '이커머스': ['쇼핑몰 구축 솔루션', '결제 게이트웨이', '재고 관리 시스템', '배송 추적 서비스', '고객 리텐션 툴'],
+    '물류': ['배송 추적 플랫폼', '창고 관리(WMS)', '배차 최적화', '라스트마일 배송', '공급망 분석'],
+    '부동산': ['매물 관리 플랫폼', '임대 계약 자동화', '시세 분석 서비스', '부동산 CRM', '입주민 관리 앱'],
+    'HR': ['채용 관리 플랫폼', '직원 온보딩 자동화', '급여 관리 솔루션', '성과 평가 시스템', '교육 관리 도구'],
+  };
+
+  // 산업 매칭
+  let base = [];
+  for (const [key, vals] of Object.entries(industryKeywords)) {
+    if (d.industry.includes(key) || key.includes(d.industry.split('/')[0])) {
+      base = vals; break;
+    }
+  }
+  if (!base.length) {
+    base = [
+      `${d.industry} 전문 플랫폼`,
+      `${d.industry} 데이터 분석 서비스`,
+      `${d.industry} 자동화 솔루션`,
+      `${d.industry} 컨설팅 서비스`,
+      `${d.industry} 관리 대시보드`,
+    ];
+  }
+
+  // hints 기반 추가 태깅
+  const hintBased = hints.slice(0, 3).map(h =>
+    `${h.charAt(0).toUpperCase() + h.slice(1)} 관련 서비스`
+  );
+
+  return [...new Set([...hintBased, ...base])].slice(0, 5);
+}
+
+// 경쟁사 추정 키워드 생성
+function inferCompetitorKeywords(hints, compName, d) {
+  const prob = d.problems[0] || '업무 자동화';
+  const base = [
+    `${d.industry} 솔루션`,
+    `${compName} 서비스`,
+    `${prob} 도구`,
+    `${d.customer} 전용 플랫폼`,
+    `${d.industry} 디지털화`,
+  ];
+  const hintKw = hints.slice(0, 3).map(h => `${h} 서비스`);
+  return [...new Set([...hintKw, ...base])].slice(0, 7);
+}
+
+// 차별화 포인트 5개 생성
+function genDiffPoints(compName, d, idx) {
+  const prob  = d.problems[0] || '업무 자동화';
+  const prob2 = d.problems[1] || d.problems[0] || '비용 절감';
+  const svc   = d.services[0];
+  const svc2  = d.services[1] || d.services[0];
+  const pct   = [30, 42, 35, 48, 27][idx % 5];
+
+  return [
+    {
+      title: `${d.industry} 특화 전문성`,
+      desc: `${d.company}는 ${d.industry} 업종만을 위해 설계된 서비스로, ${compName}의 범용 솔루션 대비 ${d.customer} 환경에 최적화된 워크플로우와 온보딩을 제공합니다.`
+    },
+    {
+      title: `${prob} 해결 실적 데이터 보유`,
+      desc: `${d.company}는 ${d.customer} 기준 평균 ${pct}% ${prob} 개선 사례를 수치로 공개합니다. ${compName}은 구체적인 ${d.industry} 성과 데이터가 부족한 경우가 많습니다.`
+    },
+    {
+      title: `${svc} × ${svc2} 통합 서비스`,
+      desc: `${d.company}는 ${svc}와 ${svc2}를 하나의 플랫폼에서 통합 제공합니다. ${compName}이 단일 기능 중심이라면, ${d.company}는 ${d.customer}의 전체 워크플로우를 커버하는 엔드투엔드 솔루션입니다.`
+    },
+    {
+      title: `${d.customer} 맞춤 가격 정책`,
+      desc: `${d.company}는 ${d.customer} 규모별 유연한 요금제를 운영합니다. ${compName}의 고정 패키지 구조 대비, 초기 비용 부담 없이 ${prob2} 개선 효과부터 확인 후 확장 가능합니다.`
+    },
+    {
+      title: `AI 인용 최적화 콘텐츠 전략`,
+      desc: `${d.company}는 ChatGPT·Perplexity 등 생성형 AI가 자동 인용하는 GEO 콘텐츠 구조를 갖추고 있습니다. ${compName}이 전통적 SEO 중심이라면, ${d.company}는 AI 검색 시대의 새로운 노출 전략으로 차별화됩니다.`
+    }
+  ];
+}
+
+// 추가해야 할 콘텐츠 제안
+function genContentSuggestions(compName, d) {
+  const prob  = d.problems[0] || '업무 자동화';
+  const svc   = d.services[0];
+  const svc2  = d.services[1] || d.services[0];
+
+  return [
+    {
+      icon: '📊',
+      text: `<strong>"${d.company} vs ${compName} 비교" 전용 페이지</strong> — "${d.industry} ${svc} 비교해주세요" 질문에서 ${d.company}가 AI에 직접 인용될 수 있는 비교 가이드`
+    },
+    {
+      icon: '🏆',
+      text: `<strong>${compName}이 다루지 않는 ${d.customer} 사례 콘텐츠</strong> — "${d.industry} ${prob} 성공 사례" 형태의 실제 수치 포함 케이스스터디 3편 이상`
+    },
+    {
+      icon: '💰',
+      text: `<strong>${d.industry} 업체별 비용 비교 가이드</strong> — "${svc} 비용 얼마인가요?" 질문에 ${d.company}의 투명한 가격 구조를 공개해 신뢰도 우위 확보`
+    },
+    {
+      icon: '❓',
+      text: `<strong>${compName} 관련 전환 FAQ</strong> — "${compName}에서 ${d.company}로 전환하는 방법", "${compName} 대안 추천" 등 경쟁사 이탈 고객을 위한 FAQ 페이지`
+    },
+    {
+      icon: '🔬',
+      text: `<strong>${d.industry} ${prob} 심층 리포트 (데이터 중심)</strong> — ${compName}이 다루지 않는 ${d.customer} 관점의 통계·트렌드 리포트로 AI 인용 가능한 1차 자료 생성`
+    },
+    {
+      icon: '⚡',
+      text: `<strong>${svc2} 무료 진단 도구 또는 체크리스트</strong> — ${compName}의 서비스 페이지 대비 상호작용 가능한 자기진단 툴로 리드 확보 + AI 인용 가능한 도구형 콘텐츠`
+    }
+  ];
+}
+
+// ===========================
+// SECTION: COMPETITOR ANALYSIS
+// ===========================
+function genSectionCompetitor(d) {
+  if (!d.competitors || d.competitors.length === 0) return '';
+
+  const analysisCards = d.competitors.map((comp, idx) => {
+    const hints    = extractCompetitorHints(comp.url);
+    const compSvcs = inferCompetitorServices(hints, d);
+    const compKws  = inferCompetitorKeywords(hints, comp.name, d);
+    const diffs    = genDiffPoints(comp.name, d, idx);
+    const contents = genContentSuggestions(comp.name, d);
+
+    return `
+    <div class="comp-analysis-section">
+      <div class="comp-header-bar">
+        <div class="comp-rank">${idx + 1}</div>
+        <div>
+          <div style="font-size:17px">${comp.name}</div>
+          <div style="font-size:12px;opacity:0.85;font-weight:500;margin-top:2px">${comp.url}</div>
+        </div>
+      </div>
+      <div class="comp-body">
+
+        <!-- 서비스 & 키워드 추출 -->
+        <div class="comp-meta-grid">
+          <div class="comp-meta-box">
+            <h5>🛠 경쟁사 추정 서비스</h5>
+            ${compSvcs.map(s => `<span class="comp-tag">${s}</span>`).join('')}
+          </div>
+          <div class="comp-meta-box">
+            <h5>🔑 경쟁사 주요 키워드</h5>
+            ${compKws.map(k => `<span class="comp-tag">${k}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- 차별화 포인트 5개 -->
+        <h4 style="font-size:14px;font-weight:700;color:#166534;margin-bottom:12px">
+          ✅ ${d.company}의 <span style="color:#ef4444">${comp.name}</span> 대비 차별화 포인트 5개
+        </h4>
+        <div class="diff-points">
+          ${diffs.map((dp, i) => `
+          <div class="diff-point">
+            <div class="diff-point-num">${i + 1}</div>
+            <div class="diff-point-content">
+              <h5>${dp.title}</h5>
+              <p>${dp.desc}</p>
+            </div>
+          </div>`).join('')}
+        </div>
+
+        <!-- 추가 콘텐츠 제안 -->
+        <h4 style="font-size:14px;font-weight:700;color:#92400e;margin:20px 0 12px">
+          📋 <span style="color:#ef4444">${comp.name}</span> 대비 추가해야 할 콘텐츠 제안
+        </h4>
+        <div class="content-suggestions">
+          ${contents.map(cs => `
+          <div class="content-suggestion">
+            <div class="content-suggestion-icon">${cs.icon}</div>
+            <div class="content-suggestion-text">${cs.text}</div>
+          </div>`).join('')}
+        </div>
+
+      </div>
+    </div>`;
+  });
+
+  return `
+  <section class="report-section" id="s-competitor">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,#ef4444,#dc2626)">🏴</div>
+      <div class="section-title-wrap">
+        <h2>경쟁사 분석 & 차별화 전략</h2>
+        <p>입력된 경쟁사 ${d.competitors.length}개 URL 기반 서비스 추출 · 키워드 분석 · 차별화 포인트 자동 생성</p>
+      </div>
+    </div>
+
+    <div class="info-box" style="background:#fff1f2;border-color:#fecaca">
+      <span class="info-icon">⚠️</span>
+      <span>경쟁사 서비스·키워드는 <strong>URL 구조 및 도메인 패턴 기반</strong>으로 자동 추출됩니다. 실제 경쟁사 페이지와 대조 후 필요 시 수정해 활용하세요.</span>
+    </div>
+
+    ${analysisCards.join('')}
+
+    <div class="info-box success" style="margin-top:24px">
+      <span class="info-icon">🎯</span>
+      <span><strong>경쟁사 분석 다음 액션:</strong> 위 차별화 포인트를 서비스 페이지 H2 제목과 FAQ 답변에 반영하고, 콘텐츠 제안을 Section 4 콘텐츠 전략에 우선 추가하면 경쟁사 대비 GEO 인용 우위를 확보할 수 있습니다.</span>
+    </div>
+  </section>`;
+}
+
+// ===========================
+// INTERACTIVE COMPONENTS
+// ===========================
+function initAccordions() {
+  // First accordion open by default
+  const first = document.querySelector('.accordion-item');
+  if (first) first.classList.add('open');
+}
+
+function toggleAccordion(header) {
+  const item = header.parentElement;
+  item.classList.toggle('open');
+}
+
+function initTabs() {
+  // Tabs already initialized inline
+}
+
+function switchTab(btn, paneId) {
+  const tabList = btn.parentElement;
+  tabList.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const tabsParent = tabList.parentElement;
+  tabsParent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(paneId);
+  if (target) target.classList.add('active');
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => { btn.textContent = '📋 복사'; }, 2000);
+  });
+}
+
+function highlightActiveNav() {
+  const sections = document.querySelectorAll('.report-section');
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const activeLink = document.querySelector(`.sidebar-nav a[href="#${entry.target.id}"]`);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3, rootMargin: '-80px 0px 0px 0px' });
+
+  sections.forEach(s => observer.observe(s));
+}
+</script>
+</body>
+</html>
